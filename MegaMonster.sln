@@ -1,0 +1,60 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Frontend", "Frontend", "{A40C595F-18F4-4116-A655-D202E295A455}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GateWay", "GateWay", "{7FD6998B-98CB-4877-870F-DCC39B954B2A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{1519FEE9-E5B4-48CE-929B-C1C9A13573A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MegaMonster.Services.Notification", "MegaMonster.Services.Notification\MegaMonster.Services.Notification.csproj", "{62143840-6CDF-4065-9B72-C2E205E6101A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MegaMonster.Services.Auth", "MegaMonster.Services.Auth\MegaMonster.Services.Auth.csproj", "{93DB98CC-D15A-4E2D-BE59-04DC61B737B9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MegaMonster.Services.User", "MegaMonster.Services.User\MegaMonster.Services.User.csproj", "{5A26AC80-5DC3-4B46-B5CD-323A1C72DCC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MegaMonster.Services.Payment", "MegaMonster.Services.Payment\MegaMonster.Services.Payment.csproj", "{1AC62664-6073-4926-8B1A-9B172E3560DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MegaMonster.Services.Favors", "MegaMonster.Services.Favors\MegaMonster.Services.Favors.csproj", "{202B120D-284F-4B7B-B516-218822190365}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MegaMonster.Services.Card", "MegaMonster.Services.Card\MegaMonster.Services.Card.csproj", "{AE2F42AB-B891-4605-8EF6-181F35AB7D46}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{62143840-6CDF-4065-9B72-C2E205E6101A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62143840-6CDF-4065-9B72-C2E205E6101A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62143840-6CDF-4065-9B72-C2E205E6101A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62143840-6CDF-4065-9B72-C2E205E6101A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93DB98CC-D15A-4E2D-BE59-04DC61B737B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93DB98CC-D15A-4E2D-BE59-04DC61B737B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93DB98CC-D15A-4E2D-BE59-04DC61B737B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93DB98CC-D15A-4E2D-BE59-04DC61B737B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A26AC80-5DC3-4B46-B5CD-323A1C72DCC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A26AC80-5DC3-4B46-B5CD-323A1C72DCC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A26AC80-5DC3-4B46-B5CD-323A1C72DCC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A26AC80-5DC3-4B46-B5CD-323A1C72DCC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AC62664-6073-4926-8B1A-9B172E3560DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AC62664-6073-4926-8B1A-9B172E3560DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AC62664-6073-4926-8B1A-9B172E3560DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AC62664-6073-4926-8B1A-9B172E3560DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{202B120D-284F-4B7B-B516-218822190365}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{202B120D-284F-4B7B-B516-218822190365}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{202B120D-284F-4B7B-B516-218822190365}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{202B120D-284F-4B7B-B516-218822190365}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE2F42AB-B891-4605-8EF6-181F35AB7D46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE2F42AB-B891-4605-8EF6-181F35AB7D46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE2F42AB-B891-4605-8EF6-181F35AB7D46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE2F42AB-B891-4605-8EF6-181F35AB7D46}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{62143840-6CDF-4065-9B72-C2E205E6101A} = {1519FEE9-E5B4-48CE-929B-C1C9A13573A4}
+		{93DB98CC-D15A-4E2D-BE59-04DC61B737B9} = {1519FEE9-E5B4-48CE-929B-C1C9A13573A4}
+		{5A26AC80-5DC3-4B46-B5CD-323A1C72DCC2} = {1519FEE9-E5B4-48CE-929B-C1C9A13573A4}
+		{1AC62664-6073-4926-8B1A-9B172E3560DA} = {1519FEE9-E5B4-48CE-929B-C1C9A13573A4}
+		{202B120D-284F-4B7B-B516-218822190365} = {1519FEE9-E5B4-48CE-929B-C1C9A13573A4}
+		{AE2F42AB-B891-4605-8EF6-181F35AB7D46} = {1519FEE9-E5B4-48CE-929B-C1C9A13573A4}
+	EndGlobalSection
+EndGlobal

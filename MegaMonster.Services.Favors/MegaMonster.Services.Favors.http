@@ -1,0 +1,6 @@
+@MegaMonster.Services.Favors_HostAddress = http://localhost:5128
+
+GET {{MegaMonster.Services.Favors_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

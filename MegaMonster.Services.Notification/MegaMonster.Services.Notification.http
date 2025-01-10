@@ -1,0 +1,6 @@
+@MegaMonster.Services.Notification_HostAddress = http://localhost:5039
+
+GET {{MegaMonster.Services.Notification_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
