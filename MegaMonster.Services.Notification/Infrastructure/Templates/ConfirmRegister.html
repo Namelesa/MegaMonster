@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mega Monster Confirmation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .email-wrapper {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            border: 4px solid #ffa726;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6f61, #ffa726);
+            padding: 30px;
+            text-align: center;
+            color: #ffffff;
+            font-size: 26px;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -25px;
+            left: calc(50% - 50px);
+            width: 100px;
+            height: 100px;
+            background: url('https://via.placeholder.com/100?text=👾') no-repeat center/contain;
+        }
+
+        .content {
+            padding: 30px;
+            color: #333333;
+            text-align: center;
+        }
+
+        .customer-details {
+            font-size: 18px;
+            color: #333333;
+            margin-bottom: 20px;
+        }
+
+        .customer-details p {
+            margin: 8px 0;
+        }
+
+        .confirmation-button {
+            display: block;
+            width: 100%;
+            max-width: 220px;
+            margin: 20px auto;
+            padding: 15px 20px;
+            text-align: center;
+            background-color: #ff6f61;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 50px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .confirmation-button:hover {
+            background-color: #ff8a65;
+            transform: scale(1.05);
+        }
+
+        .footer {
+            background-color: #ffa726;
+            padding: 15px;
+            text-align: center;
+            color: #ffffff;
+            font-size: 14px;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .footer a {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        .footer a:hover {
+            text-decoration: none;
+        }
+
+        hr {
+            border: none;
+            border-top: 2px dashed #ffa726;
+            margin: 20px auto;
+            width: 80%;
+        }
+    </style>
+</head>
+
+<body>
+<div class="email-wrapper">
+    <div class="header">
+        Mega Monster 🎢
+    </div>
+    <div class="content">
+        <h1>Welcome to Mega Monster!</h1>
+        <p>
+            We’re thrilled to have you join our world of adventures! Please confirm your email, so we can send you updates about our attractions, events, and special offers.
+        </p>
+        <div class="customer-details">
+            <p><strong>Full Name: </strong>{name}</p>
+            <p><strong>Email: </strong>{email}</p>
+            <p><strong>Telegram: </strong>{telegram}</p>
+        </div>
+        <hr>
+        <a href="#" class="confirmation-button">Confirm Your Email</a>
+    </div>
+    <div class="footer">
+        &copy; 2024 Mega Monster Pavers. All rights reserved. <br>
+        <a href="#">Privacy Policy</a> | <a href="#">Unsubscribe</a>
+    </div>
+</div>
+</body>
+
+</html>
