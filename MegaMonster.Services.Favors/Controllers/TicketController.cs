@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using MegaMonster.Services.Favors.Data;
 using MegaMonster.Services.Favors.Dto_s;
 using MegaMonster.Services.Favors.Models;
-using MegaMonster.Services.Favors.Models.Enum;
+using MegaMonster.Services.Favors.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,14 +10,14 @@ namespace MegaMonster.Services.Favors.Controllers;
 
 [ApiController]
 [Route("api/Favors")]
-public class TicketController(AppDbContext db) : ControllerBase
+public class TicketController(AppDbContext db, TicketService _ticketService) : ControllerBase
 {
     // Get Requests //
     [HttpGet("tickets/userType/{type}")]
     public async Task<IActionResult> GetTicketByUserStatus(string type)
     {
         var tickets = await db.Tickets
-            .Where(t => t.UserType.ToString() == type)
+            .Where(t => t.UserType == type)
             .ToListAsync();
 
         if (tickets.Any())
@@ -33,46 +33,101 @@ public class TicketController(AppDbContext db) : ControllerBase
     {
         try
         {
-            if (!Enum.TryParse<UserTypeEnum>(ticketDto.UserType, true, out var userType))
+            var config = await _ticketService.GetConfigurationAsync(ticketDto.UserType);
+            
+            var ticket = new Ticket(ticketDto.UserType, ticketDto.DateTimeStart, config)
             {
-                return BadRequest($"Invalid UserType: {ticketDto.UserType}. Allowed values are: {string.Join(", ", Enum.GetNames(typeof(UserTypeEnum)))}");
-            }
-
-            var ticket = new Ticket(userType)
-            {
-                DateTimeStart = ticketDto.DateTimeStart
+                
             };
+            
             db.Tickets.Add(ticket);
             await db.SaveChangesAsync();
-            return Ok("Successfully bought ticket");
+
+            return Ok(new { Message = "Ticket successfully purchased", TicketId = ticket.Id });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            return StatusCode(500, new { Message = "An unexpected error occurred while buying the ticket" });
+        }
+    }
+    
+    [HttpPost("ticket/addConfiguration")]
+    public async Task<IActionResult> AddConfiguration([Required][FromBody] TicketConfigurationDto configDto)
+    {
+        var config = new TicketConfiguration
+        {
+            UserType = configDto.UserType,
+            Price = configDto.Price,
+            DurationInHours = configDto.DurationInHours
+        };
+        try
+        {
+            db.Configurations.Add(config);
+            await db.SaveChangesAsync();
+
+            return Ok("Configuration added successfully.");
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
-            return BadRequest("Error with bought ticket");
+            return BadRequest("Configuration not added.");
         }
     }
+
     
     // Put Requests //
-    [HttpPut("ticket/edit/id/{id}")]
-    public async Task<IActionResult> EditCategory(string currentName, [Required]string newName)
+    [HttpPut("ticket/edit/Configuration")]
+    public async Task<IActionResult> EditConfiguration([Required] string userType, [Required] TicketConfigurationDto configurationDto)
     {
         try
         {
-            var currentCategory = db.Categories.FirstOrDefault(u => u.Name == currentName);
-            if (currentCategory != null)
+            var currentConfig = db.Configurations.FirstOrDefault(u => u.UserType == userType);
+            if (currentConfig != null)
             {
-                currentCategory.Name = newName;
-                db.Categories.Update(currentCategory);
+                currentConfig.UserType = configurationDto.UserType;
+                currentConfig.Price = configurationDto.Price;
+                currentConfig.DurationInHours = configurationDto.DurationInHours;
+                db.Configurations.Update(currentConfig);
                 await db.SaveChangesAsync();
-                return Ok($"Successfully edit category name {currentName} to  {newName}");
+                return Ok($"Successfully edit ticket configuration with type {currentConfig.UserType} to  {userType}");
             }
-            return NotFound($"Not found category with name = {currentName}");
+            return NotFound($"Not found category with name = {userType}");
         }
         catch (DbUpdateException ex)
         {
             Console.WriteLine(ex);
-            return BadRequest($"Category with name '{newName}' already exists.");
+            return BadRequest($"Category with name '{configurationDto.UserType}' already exists.");
+        }
+        catch (Exception e)
+        {
+            return BadRequest($"Error: {e.Message}");
+        }
+    }
+    
+    // Delete Requests //
+    [HttpPut("ticket/delete/Configuration")]
+    public async Task<IActionResult> DeleteConfiguration([Required] string userType)
+    {
+        try
+        {
+            var currentConfig = db.Configurations.FirstOrDefault(u => u.UserType == userType);
+            if (currentConfig != null)
+            {
+                db.Configurations.Remove(currentConfig);
+                await db.SaveChangesAsync();
+                return Ok($"Successfully delete ticket configuration with type {currentConfig.UserType}");
+            }
+            return NotFound($"Not found ticket config with type = {userType}");
+        }
+        catch (DbUpdateException ex)
+        {
+            Console.WriteLine(ex);
+            return BadRequest($"Ticket config with name '{userType}' already deleted");
         }
         catch (Exception e)
         {

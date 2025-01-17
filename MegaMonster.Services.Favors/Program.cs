@@ -1,4 +1,5 @@
 using MegaMonster.Services.Favors.Data;
+using MegaMonster.Services.Favors.Service;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+builder.Services.AddScoped<TicketService>();
 
 var app = builder.Build();
 

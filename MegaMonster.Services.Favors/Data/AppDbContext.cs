@@ -1,7 +1,6 @@
 using MegaMonster.Services.Favors.Models;
-using MegaMonster.Services.Favors.Models.Enum;
+using MegaMonster.Services.Favors.Service;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace MegaMonster.Services.Favors.Data;
 
@@ -10,6 +9,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Category> Categories { get; set; }
     public DbSet<Ride> Rides { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
+
+    public DbSet<TicketConfiguration> Configurations { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -20,8 +21,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Ride>()
             .HasIndex(r => r.Name)
             .IsUnique();
-        modelBuilder.Entity<Ticket>()
-            .Property(t => t.UserType)
-            .HasConversion(new EnumToStringConverter<UserTypeEnum>());
+        modelBuilder.Entity<TicketConfiguration>()
+            .HasIndex(r => r.UserType)
+            .IsUnique();
     }
 }
