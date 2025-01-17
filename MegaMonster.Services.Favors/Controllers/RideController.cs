@@ -75,7 +75,7 @@ public class RideController(AppDbContext db) : ControllerBase
     }
     
     // Put Requests //
-    [HttpPut("ride/edit/name={currentName}")]
+    [HttpPut("ride/edit/name/{currentName}")]
     public async Task<IActionResult> EditCategory(string currentName, [Required]RideDto rideDto)
     {
         try
@@ -106,7 +106,7 @@ public class RideController(AppDbContext db) : ControllerBase
     }
     
     // Delete Requests // 
-    [HttpDelete("ride/delete/name={rideName}")]
+    [HttpDelete("ride/delete/name/{rideName}")]
     public async Task<IActionResult> DeleteRide(string rideName)
     {
         var currentRide = db.Rides.FirstOrDefault(u => u.Name == rideName);

@@ -10,7 +10,7 @@ namespace MegaMonster.Services.Favors.Controllers;
 
 [ApiController]
 [Route("api/Favors")]
-public class TicketController(AppDbContext db, TicketService _ticketService) : ControllerBase
+public class TicketController(AppDbContext db, TicketService ticketService) : ControllerBase
 {
     // Get Requests //
     [HttpGet("tickets/userType/{type}")]
@@ -27,17 +27,29 @@ public class TicketController(AppDbContext db, TicketService _ticketService) : C
 
         return NotFound($"No tickets found for this user type: {type}");
     }
+    
+    [HttpGet("tickets/configs")]
+    public async Task<IActionResult> GetTicketsConfig()
+    {
+        var configs = await db.Configurations.ToListAsync();
+        if (configs.Any())
+        {
+            return Ok(configs);
+        }
+
+        return NotFound("Not found tickets configurations");
+    }
     // Post Requests //
     [HttpPost("ticket/buy")]
     public async Task<IActionResult> BuyTicket([Required] TicketDto ticketDto)
     {
         try
         {
-            var config = await _ticketService.GetConfigurationAsync(ticketDto.UserType);
+            var config = await ticketService.GetConfigurationAsync(ticketDto.UserType);
             
             var ticket = new Ticket(ticketDto.UserType, ticketDto.DateTimeStart, config)
             {
-                
+                // add user info
             };
             
             db.Tickets.Add(ticket);
@@ -47,7 +59,7 @@ public class TicketController(AppDbContext db, TicketService _ticketService) : C
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new { Message = ex.Message });
+            return BadRequest(new { ex.Message });
         }
         catch (Exception ex)
         {
@@ -78,7 +90,6 @@ public class TicketController(AppDbContext db, TicketService _ticketService) : C
             return BadRequest("Configuration not added.");
         }
     }
-
     
     // Put Requests //
     [HttpPut("ticket/edit/Configuration")]
@@ -110,7 +121,7 @@ public class TicketController(AppDbContext db, TicketService _ticketService) : C
     }
     
     // Delete Requests //
-    [HttpPut("ticket/delete/Configuration")]
+    [HttpDelete("ticket/delete/Configuration")]
     public async Task<IActionResult> DeleteConfiguration([Required] string userType)
     {
         try
@@ -128,6 +139,31 @@ public class TicketController(AppDbContext db, TicketService _ticketService) : C
         {
             Console.WriteLine(ex);
             return BadRequest($"Ticket config with name '{userType}' already deleted");
+        }
+        catch (Exception e)
+        {
+            return BadRequest($"Error: {e.Message}");
+        }
+    }
+    
+    [HttpDelete("ticket/delete")]
+    public async Task<IActionResult> DeleteTicket(int id)
+    {
+        try
+        {
+            var currentTicket = await db.Tickets.FindAsync(id);
+            if (currentTicket != null)
+            {
+                db.Tickets.Remove(currentTicket);
+                await db.SaveChangesAsync();
+                return Ok("Successfully delete ticket");
+            }
+            return NotFound("Not found ticket");
+        }
+        catch (DbUpdateException ex)
+        {
+            Console.WriteLine(ex);
+            return BadRequest("Ticket already deleted");
         }
         catch (Exception e)
         {

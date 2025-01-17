@@ -9,6 +9,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Category> Categories { get; set; }
     public DbSet<Ride> Rides { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
+    public DbSet<News> News { get; set; }
 
     public DbSet<TicketConfiguration> Configurations { get; set; }
     
@@ -22,7 +23,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasIndex(r => r.Name)
             .IsUnique();
         modelBuilder.Entity<TicketConfiguration>()
-            .HasIndex(r => r.UserType)
+            .HasIndex(t => t.UserType)
+            .IsUnique();
+        modelBuilder.Entity<News>()
+            .HasIndex(n => n.Description)
             .IsUnique();
     }
 }

@@ -15,4 +15,6 @@ public class Ride(string name) : BaseModel
 
     [Required]
     public string ClientStatus { get; set; }
+
+    public double Rating { get; set; }
 }
