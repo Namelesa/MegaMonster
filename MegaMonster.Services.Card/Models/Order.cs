@@ -7,12 +7,7 @@ public class Order : BaseModel
 {
     public string UserId { get; set; }
     public string UserName { get; set; }
-    
-    [Display(Name ="OrderDetail")]
-    public int OrderDetailId { get; set; }
-
-    [ForeignKey("OrderDetailId")]
-    public OrderDetails OrderDetails { get; set; }
-
     public double Sum { get; set; }
+    
+    public ICollection<OrderDetails> OrderDetails { get; set; } = new List<OrderDetails>();
 }
