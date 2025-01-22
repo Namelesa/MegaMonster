@@ -83,8 +83,7 @@ public class CardController(AppDbContext db) : ControllerBase
     
     // Put Requests //
     [HttpPut("edit")]
-    //think about package update
-    public async Task<IActionResult> EditCard([Required] int id, [FromBody] OrderEditDto orderEditDto)
+    public async Task<IActionResult> EditCard([Required] int orderId, [Required] int orderDetailsId, [FromBody] OrderEditDto orderEditDto)
     {
         if (!ModelState.IsValid)
         {
@@ -93,16 +92,16 @@ public class CardController(AppDbContext db) : ControllerBase
         
         var order = await db.Orders
             .Include(o => o.OrderDetails)
-            .FirstOrDefaultAsync(o => o.Id == id);
+            .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order == null)
         {
-            return NotFound($"Order with ID {id} not found");
+            return NotFound($"Order with ID {orderId} not found.");
         }
         
         order.Sum = orderEditDto.Sum;
-        
-        var orderDetails = order.OrderDetails.FirstOrDefault(od => od.Id == orderEditDto.OrderId);
+
+        var orderDetails = order.OrderDetails.FirstOrDefault(od => od.Id == orderDetailsId);
         if (orderDetails != null)
         {
             orderDetails.Bill = orderEditDto.Bill;
@@ -110,14 +109,8 @@ public class CardController(AppDbContext db) : ControllerBase
         }
         else
         {
-            order.OrderDetails.Add(new OrderDetails
-            {
-                Bill = orderEditDto.Bill,
-                TicketId = orderEditDto.TicketId,
-                OrderId = order.Id
-            });
+            return NotFound("OrderDetails with ID not found for this order.");
         }
-        
         try
         {
             db.Orders.Update(order);
@@ -126,10 +119,10 @@ public class CardController(AppDbContext db) : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, $"Error with edit order: {ex.Message}");
+            return StatusCode(500, $"Error with editing: {ex.Message}");
         }
     }
-
+    
     // Delete Requests //
     [HttpDelete("delete")]
     public async Task<IActionResult> DeleteCard([Required] int orderId)

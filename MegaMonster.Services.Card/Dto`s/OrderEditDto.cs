@@ -6,5 +6,4 @@ public class OrderEditDto
     
     public string Bill { get; set; }
     public int TicketId { get; set; }
-    public int OrderId { get; set; }
 }
