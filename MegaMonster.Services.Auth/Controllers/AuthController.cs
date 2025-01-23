@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using MegaMonster.Services.Auth.Data;
 using MegaMonster.Services.Auth.Dto_s;
+using MegaMonster.Services.Auth.JWT;
 using MegaMonster.Services.Auth.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,9 +12,9 @@ namespace MegaMonster.Services.Auth.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(AppDbContext db, PasswordHasher<Users> passwordHasher) : ControllerBase
+public class AuthController(AppDbContext db, PasswordHasher<Users> passwordHasher, JwtService jwtService) : ControllerBase
 {
-
+    [AllowAnonymous]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
@@ -51,6 +53,7 @@ public class AuthController(AppDbContext db, PasswordHasher<Users> passwordHashe
         }
     }
     
+    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login([Required, FromBody] LoginDto loginDto)
     {
@@ -72,10 +75,24 @@ public class AuthController(AppDbContext db, PasswordHasher<Users> passwordHashe
                 return Unauthorized(new { Error = "Invalid password." });
             }
         }
-
-        return Ok(new
+        var result = await jwtService.Authenticate(loginDto);
+        if (result != "Null")
         {
-            Message = $"Welcome back, {user.UserName}!",
-        });
+            return Ok(new
+            {
+                Message = $"Welcome back, {user.UserName}!" +
+                          $"Token {result}"
+            });
+        }
+
+        return BadRequest("Error");
+    }
+
+    [Authorize]
+    [HttpGet("test")]
+    public async Task<IActionResult> GetAllUsers()
+    {
+        var users = await db.Users.ToListAsync();
+        return Ok(users);
     }
 }
