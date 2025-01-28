@@ -1,6 +1,0 @@
-@MegaMonster.Services.Card_HostAddress = http://localhost:5143
-
-GET {{MegaMonster.Services.Card_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
