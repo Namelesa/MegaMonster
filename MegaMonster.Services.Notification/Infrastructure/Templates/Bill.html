@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Details & Bill</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .email-wrapper {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            border: 4px solid #ffa726;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6f61, #ffa726);
+            padding: 30px;
+            text-align: center;
+            color: #ffffff;
+            font-size: 26px;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -25px;
+            left: calc(50% - 50px);
+            width: 100px;
+            height: 100px;
+            background: url('https://via.placeholder.com/100?text=🎢') no-repeat center/contain;
+        }
+
+        .content {
+            padding: 30px;
+            color: #333333;
+            text-align: center;
+        }
+
+        .customer-details {
+            font-size: 18px;
+            color: #333333;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .customer-details p {
+            margin: 8px 0;
+        }
+
+        .bill-section {
+            margin-top: 20px;
+            text-align: left;
+            background-color: #f1f3f5;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .bill-section table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .bill-section th,
+        .bill-section td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .bill-section th {
+            background-color: #ffa726;
+            color: #ffffff;
+        }
+
+        .total {
+            font-weight: bold;
+            color: #ff6f61;
+            text-align: right;
+        }
+
+        .receipt-link {
+            display: block;
+            width: 100%;
+            max-width: 220px;
+            margin: 20px auto;
+            padding: 15px 20px;
+            text-align: center;
+            background-color: #ff6f61;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .receipt-link:hover {
+            background-color: #ff8a65;
+            transform: scale(1.05);
+        }
+
+        .footer {
+            background-color: #ffa726;
+            padding: 15px;
+            text-align: center;
+            color: #ffffff;
+            font-size: 14px;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .footer a {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        .footer a:hover {
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+<div class="email-wrapper">
+    <div class="header">
+        User Details & Bill 🧾
+    </div>
+    <div class="content">
+        <h1>User Information</h1>
+        <div class="customer-details">
+            <p><strong>Full Name: </strong> {name}</p>
+            <p><strong>Email: </strong> {email}</p>
+            <p><strong>Telegram:</strong> {telegram}</p>
+        </div>
+
+        <h1>Your Attractions Bill</h1>
+        <div class="bill-section">
+            <table>
+                <thead>
+                <tr>
+                    <th>Attraction</th>
+                    <th>Price</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Roller Coaster</td>
+                    <td>$20</td>
+                </tr>
+                <tr>
+                    <td>Ferris Wheel</td>
+                    <td>$15</td>
+                </tr>
+                <tr>
+                    <td>Haunted House</td>
+                    <td>$25</td>
+                </tr>
+                </tbody>
+                <tfoot>
+                <tr>
+                    <td class="total" colspan="2">Total: $60</td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+        <a href="{url}" class="receipt-link">View Receipt</a>
+    </div>
+    <div class="footer">
+        &copy; 2024 Mega Monster Pavers. All rights reserved. <br>
+        <a href="#">Privacy Policy</a> | <a href="#">Unsubscribe</a>
+    </div>
+</div>
+</body>
+
+</html>

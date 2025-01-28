@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Suspension Notice</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .email-wrapper {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            border: 4px solid #ff4d4f;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff4d4f, #ff6f61);
+            padding: 30px;
+            text-align: center;
+            color: #ffffff;
+            font-size: 26px;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -25px;
+            left: calc(50% - 50px);
+            width: 100px;
+            height: 100px;
+            background: url('https://via.placeholder.com/100?text=🚫') no-repeat center/contain;
+        }
+
+        .content {
+            padding: 30px;
+            color: #333333;
+            text-align: center;
+        }
+
+        .content h1 {
+            color: #ff4d4f;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .content p {
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .customer-details {
+            font-size: 18px;
+            color: #333333;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .customer-details p {
+            margin: 8px 0;
+        }
+
+        .reason {
+            font-size: 16px;
+            background-color: #f8d7da;
+            padding: 15px;
+            border-radius: 8px;
+            color: #721c24;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .footer {
+            background-color: #ff6f61;
+            padding: 15px;
+            text-align: center;
+            color: #ffffff;
+            font-size: 14px;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .footer a {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        .footer a:hover {
+            text-decoration: none;
+        }
+
+        hr {
+            border: none;
+            border-top: 2px dashed #ff6f61;
+            margin: 20px auto;
+            width: 80%;
+        }
+    </style>
+</head>
+
+<body>
+<div class="email-wrapper">
+    <div class="header">
+        Account Suspension 🚫
+    </div>
+    <div class="content">
+        <h1>Your Account Has Been Suspended</h1>
+        <p>
+            We regret to inform you that your account has been temporarily suspended due to the following reason:
+        </p>
+        <div class="reason">
+            <p><strong>Reason: </strong>{reason}</p>
+        </div>
+        <div class="customer-details">
+            <p><strong>Full Name: </strong> {name}</p>
+            <p><strong>Email: </strong> {email}</p>
+        </div>
+        <hr>
+        <p>
+            If you believe this suspension is a mistake, you can appeal by contacting our support team at:
+            <a href="mailto:support@megamoster.com">support@megamoster.com</a>
+        </p>
+    </div>
+    <div class="footer">
+        &copy; 2024 Mega Monster Pavers. All rights reserved. <br>
+        <a href="#">Privacy Policy</a> | <a href="#">Unsubscribe</a>
+    </div>
+</div>
+</body>
+
+</html>
