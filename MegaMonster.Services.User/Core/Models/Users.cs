@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
 
-namespace MegaMonster.Services.User.Models;
+namespace MegaMonster.Services.User.Core.Models;
 
 public class Users: IdentityUser
 {

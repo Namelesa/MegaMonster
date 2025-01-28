@@ -1,4 +1,4 @@
-namespace MegaMonster.Services.User.Models;
+namespace MegaMonster.Services.User.Core.Models;
 
 public class Role
 {
