@@ -1,6 +1,6 @@
-using MegaMonster.Services.Notification.WebApi.Dto_s;
+using MegaMonster.Services.Notification.Core.Models;
 
-namespace MegaMonster.Services.Notification.Infrastructure.Service;
+namespace MegaMonster.Services.Notification.Core.Interfaces;
 
 public interface INotification
 {

@@ -1,16 +1,22 @@
-using MegaMonster.Services.Notification.Infrastructure.Service;
-using MegaMonster.Services.Notification.WebApi.Dto_s;
+using MegaMonster.Services.Notification.Application.Validator;
+using MegaMonster.Services.Notification.Core.Interfaces;
+using MegaMonster.Services.Notification.Core.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MegaMonster.Services.Notification.WebApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class NotificationController(INotification notificationService) : ControllerBase
+public class NotificationController(INotification notificationService, UserValidator userValidator) : ControllerBase
 {
     [HttpPost("confirmRegister")]
     public async Task<IActionResult> SendConfirmEmail([FromBody]UserDto userDto)
     {
+        var validateResult = await userValidator.ValidateAsync(userDto);
+        if (!validateResult.IsValid)
+        {
+            return BadRequest(validateResult.Errors[0].ErrorMessage);
+        }
         var result = await notificationService.SendConfirmEmailAsync(userDto);
         return result ? Ok("Send confirm email") : BadRequest("Template file not found.");
     }
@@ -18,6 +24,11 @@ public class NotificationController(INotification notificationService) : Control
     [HttpPost("bill")]
     public async Task<IActionResult> SendBillEmail([FromBody]UserDto userDto, string url)
     {
+        var validateResult = await userValidator.ValidateAsync(userDto);
+        if (!validateResult.IsValid)
+        {
+            return BadRequest(validateResult.Errors[0].ErrorMessage);
+        }
         var result = await notificationService.SendBillEmailAsync(userDto, url);
         return result ? Ok("Send Bill email") : BadRequest("Template file not found.");
     }
@@ -25,6 +36,11 @@ public class NotificationController(INotification notificationService) : Control
     [HttpPost("ban")]
     public async Task<IActionResult> SendBanEmail([FromBody]UserDto userDto, string reason)
     {
+        var validateResult = await userValidator.ValidateAsync(userDto);
+        if (!validateResult.IsValid)
+        {
+            return BadRequest(validateResult.Errors[0].ErrorMessage);
+        }
         var result = await notificationService.SendBanEmailAsync(userDto, reason);
         return result ? Ok("Send Ban email") : BadRequest("Template file not found.");
     }
@@ -32,6 +48,11 @@ public class NotificationController(INotification notificationService) : Control
     [HttpPost("news")]
     public async Task<IActionResult> SendNewsEmail([FromBody]UserDto userDto)
     {
+        var validateResult = await userValidator.ValidateAsync(userDto);
+        if (!validateResult.IsValid)
+        {
+            return BadRequest(validateResult.Errors[0].ErrorMessage);
+        }
         var result = await notificationService.SendNewsEmailAsync(userDto);
         return result ? Ok("Send email with news") : BadRequest("Template file not found.");
     }
