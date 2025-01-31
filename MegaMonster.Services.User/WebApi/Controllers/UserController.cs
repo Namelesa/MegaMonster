@@ -1,124 +1,88 @@
 using System.ComponentModel.DataAnnotations;
-using MegaMonster.Services.User.Application.Interfaces;
+using MegaMonster.Services.User.Application.ResultOperation;
+using MegaMonster.Services.User.Application.Services;
 using MegaMonster.Services.User.Core.Models;
 using MegaMonster.Services.User.WebApi.Dto_s;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MegaMonster.Services.User.WebApi.Controllers;
+
 [ApiController]
 [Route("api/users")]
-public class UserController(IRoleRepository roleRepository, IUserRepository userRepository) : ControllerBase
+public class UserController(UserService userService, RoleService roleService) : ControllerBase
 {
-    // Get Requests //
+    // Get Requests
     [HttpGet("getAllRoles")]
-    public async Task<IActionResult> GetRoles()
-    {
-        var roles = await roleRepository.GetAllAsync();
-        return Ok(roles);
-    }
+    public async Task<IActionResult> GetRoles() => Ok(await roleService.GetAllRoles());
     
     [HttpGet("getAllUsers")]
-    public async Task<IActionResult> GetUsers()
-    {
-        var users = await userRepository.GetAllAsync();
-        return Ok(users);
-    }
+    public async Task<IActionResult> GetUsers() => Ok(await userService.GetAllUsers());
     
-    // Post Requests //
+    // Post Requests
     [HttpPost("addRole")]
     public async Task<IActionResult> AddRole([FromBody, Required] RoleDto roleDto)
     {
-        Role role = new Role()
-        {
-            RoleName = roleDto.RoleName
-        };
-        bool result = await roleRepository.AddAsync(role);
-        return result ? Ok("Add new role") : BadRequest("Error with adding");
+        if (string.IsNullOrWhiteSpace(roleDto.RoleName)) 
+            return BadRequest(new { error = "Role name cannot be empty." });
+        
+        Role role = new Role(roleDto.RoleName);
+        var result = await roleService.AddRole(role);
+        
+        return result.Success ? Ok(new { message = "Role is added" }) : BadRequest(new { error = result.Message });
     }
     
     [HttpPost("addUser")]
     public async Task<IActionResult> AddUser([FromBody, Required] UserDto userDto, [Required] string role)
     {
-        var currentRole = await roleRepository.FindRoleByNameAsync(role);
-        if (currentRole == null) return NotFound("Not found this role");
-
-        Users user = new Users()
-        {
-            Login = userDto.Login,
-            UserName = userDto.UserName,
-            NormalizedUserName = userDto.UserName.ToUpper(),
-            NormalizedEmail = userDto.Email.ToUpper(),
-            Email = userDto.Email,
-            PhoneNumber = userDto.PhoneNumber,
-            Role = currentRole,
-            RoleId = currentRole.Id,
-            PasswordHash = userDto.PasswordHash
-        };
-        
-        var result = await userRepository.AddAsync(user);
-        return result ? Ok("Add user") : BadRequest("Error with adding user");
+        var result = await AddUserWithRole(userDto, role);
+        return result.Success ? Ok("User added.") : BadRequest(new { error = result.Message });
     }
     
-    // Put Requests // 
+    // Put Requests 
     [HttpPut("editRole")]
     public async Task<IActionResult> EditRole([Required] string oldName, [Required] string newName)
     {
-        var currentRole = await roleRepository.FindRoleByNameAsync(oldName);
-        if (currentRole == null) return NotFound("Role does not founded");
-        
-        currentRole.RoleName = newName;
-        bool result = await roleRepository.EditAsync(currentRole);
-        return result ? Ok("Role update") : BadRequest("Error with updating");
+        var result = await roleService.EditRoleAsync(oldName, newName);
+        return result.Success ? Ok(new { message = "Role is edited" }) : BadRequest(new { error = result.Message });
     }
     
     [HttpPut("editUser")]
     public async Task<IActionResult> EditUser([Required, FromBody] UserEditDto userEditDto, [Required] string login)
     {
-        var currentUser = await userRepository.GetUserByLoginAsync(login);
-        if (currentUser == null) return NotFound("Not found user");
-        
-        currentUser.Login = userEditDto.Login;
-        currentUser.UserName = userEditDto.UserName;
-        currentUser.NormalizedUserName = userEditDto.UserName.ToUpper();
-        currentUser.NormalizedEmail = userEditDto.Email.ToUpper();
-        currentUser.Email = userEditDto.Email;
-        currentUser.PhoneNumber = userEditDto.PhoneNumber;
-
-        bool result = await userRepository.EditAsync(currentUser);
-        return result ? Ok("User update") : BadRequest("Error with update");
+        var result = await userService.EditUser(login, userEditDto.UserName, userEditDto.Email, userEditDto.PhoneNumber, userEditDto.Login);
+        return result.Success ? Ok("User updated") : BadRequest(new { error = result.Message });
     }
     
-    // Delete Requests //
+    // Delete Requests
     [HttpDelete("delete")]
     public async Task<IActionResult> DeleteRole([Required] string name)
     {
-        var currentRole = await roleRepository.FindRoleByNameAsync(name);
-        if (currentRole == null) return NotFound("Role not found");
-        
-        bool result = await roleRepository.DeleteAsync(currentRole);
-        return result ? Ok("Delete role is ok") : BadRequest("Error with deleted role");
+        var result = await roleService.DeleteRoleAsync(name);
+        return result.Success ? Ok(new { message = "Role deleted" }) : BadRequest(new { error = result.Message });
     }
     
     [HttpDelete("ban")]
     public async Task<IActionResult> DeleteUser([Required] string login)
     {
-        var currentUser = await userRepository.GetUserByLoginAsync(login);
-        if (currentUser == null) return NotFound("User not found");
-        
-        bool result = await userRepository.DeleteAsync(currentUser);
-        return result ? Ok("User was banned") : BadRequest("Error with baning this user");
+        var result = await userService.DeleteUser(login);
+        return result.Success ? Ok("User banned") : BadRequest(new { error = result.Message });
     }
     
-    // Admin //
+    // Admin
     [HttpPost("createAdmin")]
     public async Task<IActionResult> AddUserAdmin([FromBody, Required] UserDto userDto, string role = "Admin")
     {
-        var currentRole = await roleRepository.FindRoleByNameAsync(role);
-        
-        if (currentRole == null) return NotFound("Not found this role");
-        Users user = new Users()
+        var result = await AddUserWithRole(userDto, role);
+        return result.Success ? Ok("New admin added") : BadRequest(new { error = result.Message });
+    }
+
+    private async Task<OperationResult> AddUserWithRole(UserDto userDto, string role)
+    {
+        var currentRole = await roleService.FindRoleByNameAsync(role);
+        if (currentRole == null) return OperationResult.Fail("Role not found.");
+
+        Users user = new Users(userDto.Login)
         {
-            Login = userDto.Login,
             UserName = userDto.UserName,
             NormalizedUserName = userDto.UserName.ToUpper(),
             NormalizedEmail = userDto.Email.ToUpper(),
@@ -129,7 +93,6 @@ public class UserController(IRoleRepository roleRepository, IUserRepository user
             PasswordHash = userDto.PasswordHash
         };
 
-        bool result = await userRepository.AddAsync(user);
-        return result ? Ok("Add new admin") : BadRequest("Error with adding admin");
+        return await userService.AddUser(user);
     }
 }

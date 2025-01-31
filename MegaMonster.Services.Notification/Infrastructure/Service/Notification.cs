@@ -1,6 +1,6 @@
-using MegaMonster.Services.Notification.Dto_s;
 using MegaMonster.Services.Notification.Infrastructure.MailJet;
 using MegaMonster.Services.Notification.Infrastructure.Reader;
+using MegaMonster.Services.Notification.WebApi.Dto_s;
 using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace MegaMonster.Services.Notification.Infrastructure.Service;
@@ -9,7 +9,7 @@ public class Notification(IEmailSender emailSender, ITemplateReader templateRead
 {
     public async Task<bool> SendConfirmEmailAsync(UserDto userDto)
     {
-        var templatePath = "Infrastructure/Templates/ConfirmRegister.html";
+        var templatePath = "Persistence/Templates/ConfirmRegister.html";
         var htmlBody = await templateReader.ReadTemplateAsync(templatePath);
         
         if (htmlBody == null)
@@ -26,7 +26,7 @@ public class Notification(IEmailSender emailSender, ITemplateReader templateRead
     }
     public async Task<bool> SendBillEmailAsync(UserDto userDto, string url)
     {
-        var templatePath = "Infrastructure/Templates/Bill.html";
+        var templatePath = "Persistence/Templates/Bill.html";
         var htmlBody = await templateReader.ReadTemplateAsync(templatePath);
         
         if (htmlBody == null)
@@ -44,7 +44,7 @@ public class Notification(IEmailSender emailSender, ITemplateReader templateRead
     }
     public async Task<bool> SendBanEmailAsync(UserDto userDto, string reason)
     {
-        var templatePath = "Infrastructure/Templates/BanUser.html";
+        var templatePath = "Persistence/Templates/BanUser.html";
         var htmlBody = await templateReader.ReadTemplateAsync(templatePath);
         
         if (htmlBody == null)
@@ -61,7 +61,7 @@ public class Notification(IEmailSender emailSender, ITemplateReader templateRead
     }
     public async Task<bool> SendNewsEmailAsync(UserDto userDto)
     {
-        var templatePath = "Infrastructure/Templates/News.html";
+        var templatePath = "Persistence/Templates/News.html";
         var htmlBody = await templateReader.ReadTemplateAsync(templatePath);
         
         if (htmlBody == null)

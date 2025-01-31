@@ -1,4 +1,4 @@
-using MegaMonster.Services.Notification.Dto_s;
+using MegaMonster.Services.Notification.WebApi.Dto_s;
 
 namespace MegaMonster.Services.Notification.Infrastructure.Service;
 

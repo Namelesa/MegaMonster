@@ -1,4 +1,4 @@
-using MegaMonster.Services.Card.Data;
+using MegaMonster.Services.Card.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
