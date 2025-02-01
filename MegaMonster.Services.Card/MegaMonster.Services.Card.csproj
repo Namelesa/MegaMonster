@@ -23,10 +23,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Application\Interfaces\" />
-      <Folder Include="Application\Repositories\" />
+      <Folder Include="Application\Validation\" />
       <Folder Include="Core\" />
-      <Folder Include="Infrastructure\" />
       <Folder Include="WebApi\" />
     </ItemGroup>
 

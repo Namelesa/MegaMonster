@@ -1,54 +1,55 @@
 using System.ComponentModel.DataAnnotations;
+using MegaMonster.Services.Card.Application.Services;
 using MegaMonster.Services.Card.Core.Models;
-using MegaMonster.Services.Card.Infrastructure.Data;
 using MegaMonster.Services.Card.WebApi.Dto_s;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace MegaMonster.Services.Card.WebApi.Controllers;
 
 [ApiController]
 [Route("api/card")]
-public class CardController(AppDbContext db) : ControllerBase
+public class CardController(OrderService orderService, OrderDetailsService orderDetailsService) : ControllerBase
 {
     // Get Requests //
     [HttpGet("card")]
     public async Task<IActionResult> GetCard(string userId)
     {
-        var orders = await db.Orders.Where(t => t.UserId == userId).ToListAsync();
-
-        if (orders.Any())
+        var orderIds = await orderService.GetOrdersIdByUserId(userId);
+        if (!orderIds.Any())
         {
-            var orderIds = orders.Select(o => o.Id).ToList();
-            var orderDetails = await db.OrdersDetails
-                .Where(od => orderIds.Contains(od.OrderId))
-                .ToListAsync();
-            ViewModel.Card card = new ViewModel.Card
-            {
-                OrderCard = orders,
-                OrderDetailsCard = orderDetails
-            };
-
-            return Ok(card);
+            return NotFound("No orders found for this user.");
         }
 
-        return NotFound("Not found your orders");
+        var orderDetails = await orderDetailsService.GetOrderDetails(orderIds);
+        var orders = await orderService.GetOrdersByUserId(userId);
+
+        return Ok(new ViewModel.Card
+        {
+            OrderCard = orders,
+            OrderDetailsCard = orderDetails
+        });
     }
     
     // Post Requests //
     [HttpPost("add")]
-    public async Task<IActionResult> AddCard([FromBody] OrderDto orderDto)
+    public async Task<IActionResult> AddToCard([FromBody] OrderDto orderDto)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
+        
         if (string.IsNullOrEmpty(orderDto.UserId) || string.IsNullOrEmpty(orderDto.UserName))
         {
             return BadRequest("UserId and UserName are required.");
         }
-        
+
+        if (!orderDto.OrderDetails.Any())
+        {
+            return BadRequest("At least one order detail is required.");
+        }
+
+        if (orderDto.OrderDetails.Count > 10)
+        {
+            return BadRequest("You cannot add more than 10 order details.");
+        }
+
         var order = new Order
         {
             UserId = orderDto.UserId,
@@ -56,29 +57,20 @@ public class CardController(AppDbContext db) : ControllerBase
             Sum = orderDto.Sum
         };
 
-        var orderDetails = new OrderDetails
-        {
-            Bill = orderDto.Bill,
-            TicketId = orderDto.TicketId,
-            Order = order 
-        };
+        order.OrderDetails = orderDto.OrderDetails
+            .Select(detailsDto => new OrderDetails
+            {
+                Bill = detailsDto.Bill,
+                TicketId = detailsDto.TicketId,
+                Order = order
+            })
+            .ToList();
 
-        order.OrderDetails.Add(orderDetails);
+        var result = await orderService.AddOrder(order);
 
-        var transaction = await db.Database.BeginTransactionAsync();
-        try
-        {
-            db.Orders.Add(order); 
-            await db.SaveChangesAsync();
-            await transaction.CommitAsync();
-
-            return Ok("Order successfully added");
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync();
-            return StatusCode(500, $"Error with adding: {ex.Message}");
-        }
+        return result.Success 
+            ? Ok(new { message = "Order successfully added" }) 
+            : BadRequest(result.Message);
     }
     
     // Put Requests //
@@ -89,10 +81,8 @@ public class CardController(AppDbContext db) : ControllerBase
         {
             return BadRequest(ModelState);
         }
-        
-        var order = await db.Orders
-            .Include(o => o.OrderDetails)
-            .FirstOrDefaultAsync(o => o.Id == orderId);
+
+        var order = await orderService.GetAllOrder(orderId);
 
         if (order == null)
         {
@@ -102,36 +92,23 @@ public class CardController(AppDbContext db) : ControllerBase
         order.Sum = orderEditDto.Sum;
 
         var orderDetails = order.OrderDetails.FirstOrDefault(od => od.Id == orderDetailsId);
-        if (orderDetails != null)
-        {
-            orderDetails.Bill = orderEditDto.Bill;
-            orderDetails.TicketId = orderEditDto.TicketId;
-        }
-        else
+        if (orderDetails == null)
         {
             return NotFound("OrderDetails with ID not found for this order.");
         }
-        try
-        {
-            db.Orders.Update(order);
-            await db.SaveChangesAsync();
-            return Ok("Order successfully edited.");
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Error with editing: {ex.Message}");
-        }
+
+        orderDetails.Bill = orderEditDto.Bill;
+        orderDetails.TicketId = orderEditDto.TicketId;
+        var result = await orderService.UpdateOrder(order);
+        return result.Success ? Ok("Order updated") : BadRequest(result.Message);
     }
     
     // Delete Requests //
     [HttpDelete("delete")]
     public async Task<IActionResult> DeleteCard([Required] int orderId)
     {
-        var order = await db.Orders.FindAsync(orderId);
-        if (order == null) return NotFound("Error with deleting item");
-        db.Orders.Remove(order);
-        await db.SaveChangesAsync();
-        return Ok("Removing successfully");
+        var result = await orderService.DeleteById(orderId);
+        return result.Success ? Ok("Order deleted") : BadRequest(result.Message);
         //send delete to ticket
     }
     

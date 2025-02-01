@@ -1,0 +1,83 @@
+using MegaMonster.Services.Card.Core.Interfaces;
+using MegaMonster.Services.Card.Core.Models;
+using MegaMonster.Services.Card.Persistence.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace MegaMonster.Services.Card.Persistence.Repositories;
+
+public class OrderRepository(AppDbContext db) : IOrderRepository
+{
+    public async Task<IEnumerable<Order>> GetAllAsync()
+    {
+        return await db.Orders.ToListAsync();
+    }
+
+    public async Task<bool> AddAsync(Order t)
+    {
+        try
+        {
+            await db.Orders.AddAsync(t);
+            await db.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
+    }
+
+    public async Task<bool> EditAsync(Order t)
+    {
+        try
+        {
+            db.Orders.Update(t);
+            await db.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
+    }
+
+    public async Task<bool> DeleteAsync(Order t)
+    {
+        try
+        {
+            db.Orders.Remove(t);
+            await db.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
+    }
+
+    public async Task<List<int>> GetOrdersIdByUserId(string userId)
+    {
+        var orders = await db.Orders.Where(t => t.UserId == userId).ToListAsync();
+        return orders.Select(o => o.Id).ToList();
+    }
+
+    public async Task<List<Order>> GetOrdersUserId(string userId)
+    {
+        return await db.Orders.Where(t => t.UserId == userId).ToListAsync();
+    }
+
+    public async Task<Order?> GetOrder(int id)
+    {
+        return await db.Orders.FirstOrDefaultAsync(u => u.Id == id);
+    }
+    
+    public async Task<Order?> GetAllOrderInfo(int orderId)
+    {
+        return await db.Orders
+            .Include(o => o.OrderDetails)
+            .FirstOrDefaultAsync(o => o.Id == orderId);
+    }
+    
+}

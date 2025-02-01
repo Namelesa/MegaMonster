@@ -1,7 +1,7 @@
 using MegaMonster.Services.Card.Core.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace MegaMonster.Services.Card.Infrastructure.Data;
+namespace MegaMonster.Services.Card.Persistence.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {

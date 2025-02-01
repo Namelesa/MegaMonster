@@ -1,4 +1,7 @@
-using MegaMonster.Services.Card.Infrastructure.Data;
+using MegaMonster.Services.Card.Application.Services;
+using MegaMonster.Services.Card.Core.Interfaces;
+using MegaMonster.Services.Card.Persistence.Data;
+using MegaMonster.Services.Card.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,8 +10,19 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderDetailsRepository, OrderDetailsRepository>();
+
+builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<OrderDetailsService>();
+
+//builder.Services.AddScoped<UserValidation>();
+//builder.Services.AddScoped<RoleValidation>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
