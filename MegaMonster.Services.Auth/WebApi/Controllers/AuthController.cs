@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using MegaMonster.Services.Auth.Application.Interfaces;
-using MegaMonster.Services.Auth.Core.Models;
+using MegaMonster.Services.Auth.Application.Services;
 using MegaMonster.Services.Auth.WebApi.Dto_s;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +8,7 @@ namespace MegaMonster.Services.Auth.WebApi.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(IRegisterRepository registerRepository, ILoginRepository loginRepository) : ControllerBase
+public class AuthController(AuthService authService) : ControllerBase
 {
     [AllowAnonymous]
     [HttpPost("register")]
@@ -20,25 +19,8 @@ public class AuthController(IRegisterRepository registerRepository, ILoginReposi
             return BadRequest(new { Error = "Invalid input data.", Details = ModelState });
         }
 
-        bool checkLoginAndEmail = await registerRepository.CheckLoginAndEmail(registerDto.Login, registerDto.Email);
-        if (!checkLoginAndEmail)
-        {
-            return Conflict(new { Error = "User with the same email or login already exists." });
-        }
-        
-        var user = new Users
-        {
-            Email = registerDto.Email,
-            UserName = registerDto.UserName,
-            Login = registerDto.Login,
-            PhoneNumber = registerDto.PhoneNumber,
-            NormalizedEmail = registerDto.Email.ToUpper(),
-            NormalizedUserName = registerDto.UserName.ToUpper(),
-        };
-        
-        user.PasswordHash = await registerRepository.HashPassword(registerDto.Password, user);
-        bool result = await registerRepository.RegisterUser(user);
-        return result ? Ok(new { Message = "User registered successfully." }) : StatusCode(500, new { Error = "An unexpected error occurred during registration." });
+        var result = await authService.RegisterUser(registerDto.Password, registerDto.Email, registerDto.UserName, registerDto.Login, registerDto.PhoneNumber);
+        return result.Success ? Ok("Register user") : BadRequest(result.Message);
     }
     
     [AllowAnonymous]
@@ -49,19 +31,8 @@ public class AuthController(IRegisterRepository registerRepository, ILoginReposi
         {
             return BadRequest(new { Error = "Invalid input data.", Details = ModelState });
         }
-        
-        bool checkLoginAndEmail = await loginRepository.CheckLoginAndEmail(loginDto.Login, loginDto.Email);
-        if(checkLoginAndEmail) return NotFound($"User with login '{loginDto.Login}' not found.");
 
-        var user = await loginRepository.FindUser(loginDto.Login);
-        var token = await loginRepository.Auth(user, loginDto.Password);
-        return Ok(new { Token = token });
-    }
-
-    [Authorize]
-    [HttpGet("test")]
-    public async Task<IActionResult> GetAllUsers()
-    {
-        return Ok("Hello");
+        var result = await authService.LoginUser(loginDto.Password, loginDto.Email, loginDto.Login);
+        return result.Success ? Ok(result.Message) : BadRequest(result.Message);
     }
 }

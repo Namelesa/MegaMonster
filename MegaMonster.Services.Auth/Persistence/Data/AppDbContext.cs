@@ -1,11 +1,11 @@
 using MegaMonster.Services.Auth.Core.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace MegaMonster.Services.Auth.Infrastructure.Data;
+namespace MegaMonster.Services.Auth.Persistence.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public DbSet<Users?> Users { get; set; }
+    public DbSet<Users> Users { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

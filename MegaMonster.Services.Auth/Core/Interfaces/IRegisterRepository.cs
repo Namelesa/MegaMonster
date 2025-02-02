@@ -1,6 +1,6 @@
 using MegaMonster.Services.Auth.Core.Models;
 
-namespace MegaMonster.Services.Auth.Application.Interfaces;
+namespace MegaMonster.Services.Auth.Core.Interfaces;
 
 public interface IRegisterRepository : IRepository<Users>
 {

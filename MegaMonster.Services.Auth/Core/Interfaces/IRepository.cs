@@ -1,4 +1,4 @@
-namespace MegaMonster.Services.Auth.Application.Interfaces;
+namespace MegaMonster.Services.Auth.Core.Interfaces;
 
 public interface IRepository<T>
 {
