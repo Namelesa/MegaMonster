@@ -24,7 +24,8 @@ public class PaymentController(PaymentService paymentService) : ControllerBase
                 request.UserName,
                 request.TicketType,
                 request.Sum,
-                request.Count
+                request.Count,
+                request.Action
             );
 
             return Ok(new { url = paymentUrl });
@@ -49,7 +50,7 @@ public class PaymentController(PaymentService paymentService) : ControllerBase
 
             if (isSuccess)
             {
-                return Redirect("https://localhost:7215/swagger/index.html");
+                return Redirect("https://www.youtube.com/");
             }
             else
             {
