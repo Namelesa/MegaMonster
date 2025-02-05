@@ -1,7 +1,7 @@
 using MegaMonster.Services.Payment.Infrastructure;
 using Newtonsoft.Json;
 
-namespace MegaMonster.Services.Payment.Models;
+namespace MegaMonster.Services.Payment.Core.Models;
 
 public class Payments
 {

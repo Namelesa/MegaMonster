@@ -1,4 +1,4 @@
-namespace MegaMonster.Services.Payment.Dto_s;
+namespace MegaMonster.Services.Payment.WebApi.Dto_s;
 
 public class PaymentRequestDto
 {
@@ -7,4 +7,5 @@ public class PaymentRequestDto
     public string TicketType { get; set; }
     public decimal Sum { get; set; }
     public int Count { get; set; }
+    public string Action { get; set; }
 }

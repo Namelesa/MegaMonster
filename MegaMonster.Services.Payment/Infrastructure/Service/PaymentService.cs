@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
-using MegaMonster.Services.Payment.Data;
-using MegaMonster.Services.Payment.Models;
+using MegaMonster.Services.Payment.Core.Models;
+using MegaMonster.Services.Payment.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
@@ -9,24 +9,25 @@ namespace MegaMonster.Services.Payment.Infrastructure.Service
 {
     public class PaymentService(string publicKey, string privateKey, AppDbContext db)
     {
-        private string CreatePayment(string orderId, string userName, string ticketType, decimal amount, int count)
+        private string CreatePayment(string orderId, string userName, string ticketType, decimal amount, int count, string action)
         {
             var data = new Dictionary<string, string>
             {
                 {"version", PaymentSettings.ApiVersion.ToString()},
                 {"public_key", publicKey},
-                {"action", "pay"},
+                {"action", action.ToLower() },
                 {"amount", amount.ToString()},
                 {"currency", "UAH"},
                 {"description", $"{ticketType} - {count}."},
                 {"order_id", orderId},
-                {"result_url", "https://localhost:7215/api/payment/result"}
+                {"result_url", "https://www.youtube.com/"}
             };
 
             var json = JsonConvert.SerializeObject(data);
             var base64Data = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
 
             var signature = GenerateSignature(base64Data);
+            Console.WriteLine($"Отправленные данные: {JsonConvert.SerializeObject(data)}");
 
             return $"{PaymentSettings.LiqpayApiCheckoutUrl}?data={base64Data}&signature={signature}";
         }
@@ -38,14 +39,14 @@ namespace MegaMonster.Services.Payment.Infrastructure.Service
             return Convert.ToBase64String(hash);
         }
 
-        public async Task<string> CreatePaymentAsync(string orderId, string userName, string ticketType, decimal amount, int count)
+        public async Task<string> CreatePaymentAsync(string orderId, string userName, string ticketType, decimal amount, int count, string action)
         {
             if (count <= 0 || amount <= 0)
             {
                 throw new ArgumentException("Sum and count must be > 0.");
             }
             
-            var paymentUrl = CreatePayment(orderId, userName, ticketType, amount, count);
+            var paymentUrl = CreatePayment(orderId, userName, ticketType, amount, count, action);
             
             var payment = new Payments
             {
@@ -66,12 +67,14 @@ namespace MegaMonster.Services.Payment.Infrastructure.Service
         
         public async Task<bool> HandlePaymentResultAsync(Dictionary<string, string> requestDictionary)
         {
+            Console.WriteLine($"Request data: {requestDictionary}");
             if (requestDictionary.TryGetValue("data", out var base64Data) &&
-                requestDictionary.TryGetValue("signature", out var signature))
+                requestDictionary.TryGetValue("signature", out var signature)) 
             {
                 var decodedData = Encoding.UTF8.GetString(Convert.FromBase64String(base64Data));
+                Console.WriteLine($"Decoded data: {decodedData}");
                 var requestData = JsonConvert.DeserializeObject<Dictionary<string, string>>(decodedData);
-
+                Console.WriteLine($"Request data: {requestData}");
                 Console.WriteLine($"Decoded request data: {JsonConvert.SerializeObject(requestData)}");
 
                 if (!requestData.TryGetValue("order_id", out var orderId))
