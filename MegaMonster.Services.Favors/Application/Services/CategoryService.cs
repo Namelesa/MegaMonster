@@ -1,30 +1,37 @@
 using MegaMonster.Services.Favors.Application.OperationResult;
 using MegaMonster.Services.Favors.Core.Interfaces;
 using MegaMonster.Services.Favors.Core.Models;
+using MegaMonster.Services.Favors.Infrastructure;
 
 namespace MegaMonster.Services.Favors.Application.Services;
 
-public class CategoryService(ICategoryRepository categoryRepository)
+public class CategoryService(ICategoryRepository categoryRepository, IRedisService redisService)
 {
-    public async Task<IEnumerable<Category>> GetAllCategories() => await categoryRepository.GetAll();
+    private const string CategoryCacheKey = "All_Categories";
 
-    public async Task<Category?> GetCategoryById(int id) => await categoryRepository.GetCategoryById(id);
+    public async Task<IEnumerable<Category>> GetAllCategories() => 
+        await GetOrSetCache(CategoryCacheKey, () => categoryRepository.GetAll()!);
 
-    public async Task<Category?> GetCategoryByName(string name) => await categoryRepository.GetCategoryByName(name);
+    public async Task<Category?> GetCategoryById(int id) => 
+        await GetOrSetCache($"Category_{id}", () => categoryRepository.GetCategoryById(id));
+
+    public async Task<Category?> GetCategoryByName(string name) => 
+        await GetOrSetCache($"Category_{name}", () => categoryRepository.GetCategoryByName(name));
 
     public async Task<ResultOperation> AddCategory(string categoryName)
     {
         if (string.IsNullOrWhiteSpace(categoryName)) 
             return ResultOperation.Fail("Category name cannot be empty.");
 
-        var existingCategory = await categoryRepository.GetCategoryByName(categoryName);
-        if (existingCategory is not null)
+        if (await categoryRepository.GetCategoryByName(categoryName) is not null)
             return ResultOperation.Fail($"Category with name '{categoryName}' already exists.");
 
         var category = new Category(categoryName);
-        return await categoryRepository.AddAsync(category)
-            ? ResultOperation.Ok()
-            : ResultOperation.Fail("Error adding category.");
+        var result = await categoryRepository.AddAsync(category);
+        if (!result) return ResultOperation.Fail("Error adding category.");
+        
+        await ProcessChange(categoryName);
+        return ResultOperation.Ok();
     }
 
     public async Task<ResultOperation> EditCategory(string currentName, string newName)
@@ -40,9 +47,11 @@ public class CategoryService(ICategoryRepository categoryRepository)
             return ResultOperation.Fail($"Category with name '{newName}' already exists.");
 
         currentCategory.Name = newName;
-        return await categoryRepository.EditAsync(currentCategory)
-            ? ResultOperation.Ok()
-            : ResultOperation.Fail("Error updating category.");
+        var result = await categoryRepository.EditAsync(currentCategory);
+        if (!result) return ResultOperation.Fail("Error updating category.");
+        
+        await ProcessChange(currentName, newName);
+        return ResultOperation.Ok();
     }
 
     public async Task<ResultOperation> DeleteCategory(string categoryName)
@@ -51,8 +60,31 @@ public class CategoryService(ICategoryRepository categoryRepository)
         if (category is null)
             return ResultOperation.Fail($"Category '{categoryName}' not found.");
 
-        return await categoryRepository.DeleteAsync(category)
-            ? ResultOperation.Ok()
-            : ResultOperation.Fail("Error deleting category.");
+        var result = await categoryRepository.DeleteAsync(category);
+        if (!result) return ResultOperation.Fail("Error deleting category.");
+        
+        await ProcessChange(categoryName);
+        return ResultOperation.Ok();
+    }
+
+    private async Task<T?> GetOrSetCache<T>(string key, Func<Task<T?>> getData, TimeSpan? expiration = null)
+    {
+        var cachedData = await redisService.GetAsync<T>(key);
+        if (cachedData is not null) return cachedData;
+        
+        var data = await getData();
+        if (data is not null)
+            await redisService.SetAsync(key, data, expiration ?? TimeSpan.FromMinutes(60));
+        
+        return data;
+    }
+    
+    private async Task ProcessChange(params string[] categoryNames)
+    {
+        await redisService.RemoveAsync(CategoryCacheKey);
+        foreach (var categoryName in categoryNames)
+        {
+            await redisService.RemoveAsync($"Category_{categoryName}");
+        }
     }
 }

@@ -1,4 +1,4 @@
-namespace MegaMonster.Services.Payment.Dto_s;
+namespace MegaMonster.Services.Payment.WebApi.Dto_s;
 
 public class PaymentRequestDto
 {

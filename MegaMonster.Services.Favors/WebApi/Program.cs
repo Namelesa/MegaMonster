@@ -1,7 +1,9 @@
 using MegaMonster.Services.Favors.Application.Services;
 using MegaMonster.Services.Favors.Core.Interfaces;
 using MegaMonster.Services.Favors.Core.Models;
+using MegaMonster.Services.Favors.Infrastructure;
 using MegaMonster.Services.Favors.Persistence.Data;
+using MegaMonster.Services.Favors.Persistence.DbInitializer;
 using MegaMonster.Services.Favors.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "FavorsService";
+});
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -21,11 +29,15 @@ builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<RideService>();
 builder.Services.AddScoped<NewsService>();
 
-builder.Services.AddTransient<IRideRepository, RideRepository>();
-builder.Services.AddTransient<ICategoryRepository, CategoryRepository>();
-builder.Services.AddTransient<ITicketRepository, TicketRepository>();
-builder.Services.AddTransient<ITicketConfigurationRepository, TicketConfigurationRepository>();
-builder.Services.AddTransient<INewsRepository, NewsRepository>();
+builder.Services.AddScoped<IRideRepository, RideRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<ITicketConfigurationRepository, TicketConfigurationRepository>();
+builder.Services.AddScoped<INewsRepository, NewsRepository>();
+
+builder.Services.AddScoped<IDbInitializer, DbInitializer>();
+
+builder.Services.AddScoped<IRedisService, RedisService>();
 
 var app = builder.Build();
 
@@ -34,6 +46,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+    await dbInitializer.Initialize();
 }
 
 app.MapControllers();

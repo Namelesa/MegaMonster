@@ -1,5 +1,6 @@
-using MegaMonster.Services.Payment.Data;
 using MegaMonster.Services.Payment.Infrastructure.Service;
+using MegaMonster.Services.Payment.Persistence.Data;
+using MegaMonster.Services.Payment.Persistence.DbInitializer;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "PaymentService";
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
@@ -25,6 +33,8 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddScoped<IDbInitializer, DbInitializer>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -32,6 +42,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+    await dbInitializer.Initialize();
 }
 
 app.UseHttpsRedirection();

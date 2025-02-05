@@ -1,21 +1,27 @@
 using MegaMonster.Services.Favors.Application.OperationResult;
 using MegaMonster.Services.Favors.Core.Interfaces;
 using MegaMonster.Services.Favors.Core.Models;
+using MegaMonster.Services.Favors.Infrastructure;
 
 namespace MegaMonster.Services.Favors.Application.Services;
 
-public class NewsService(INewsRepository newsRepository)
+public class NewsService(INewsRepository newsRepository, IRedisService redisService)
 {
-    public async Task<IEnumerable<News>> GetAllNews() => await newsRepository.GetAll();
+    private const string NewsCacheKey = "All_News";
+
+    public async Task<IEnumerable<News>> GetAllNews() => 
+        await GetOrSetCache(NewsCacheKey, () => newsRepository.GetAll()!);
 
     public async Task<ResultOperation> AddNews(News news)
     {
         if (string.IsNullOrWhiteSpace(news.Name)) 
             return ResultOperation.Fail("News name cannot be empty.");
         
-        return await newsRepository.AddAsync(news)
-            ? ResultOperation.Ok()
-            : ResultOperation.Fail("Error adding news.");
+        var result = await newsRepository.AddAsync(news);
+        if (!result) return ResultOperation.Fail("Error adding news.");
+        
+        await ProcessChange();
+        return ResultOperation.Ok();
     }
     
     public async Task<ResultOperation> EditNews(int id, string type, string name, string description, string image, string link)
@@ -32,9 +38,12 @@ public class NewsService(INewsRepository newsRepository)
         currentNews.Description = description;
         currentNews.Image = image;
         currentNews.Link = link;
-        return await newsRepository.EditAsync(currentNews)
-            ? ResultOperation.Ok()
-            : ResultOperation.Fail("Error updating news.");
+        
+        var result = await newsRepository.EditAsync(currentNews);
+        if (!result) return ResultOperation.Fail("Error updating news.");
+        
+        await ProcessChange();
+        return ResultOperation.Ok();
     }
 
     public async Task<ResultOperation> DeleteNews(int id)
@@ -43,6 +52,26 @@ public class NewsService(INewsRepository newsRepository)
         if (news == null) return ResultOperation.Fail("Not found news with this id");
 
         var result = await newsRepository.DeleteAsync(news);
-        return result ? ResultOperation.Ok() : ResultOperation.Fail("Can not delete news");
+        if (!result) return ResultOperation.Fail("Can not delete news");
+        
+        await ProcessChange();
+        return ResultOperation.Ok();
+    }
+
+    private async Task<T?> GetOrSetCache<T>(string key, Func<Task<T?>> getData, TimeSpan? expiration = null)
+    {
+        var cachedData = await redisService.GetAsync<T>(key);
+        if (cachedData is not null) return cachedData;
+        
+        var data = await getData();
+        if (data is not null)
+            await redisService.SetAsync(key, data, expiration ?? TimeSpan.FromMinutes(60));
+        
+        return data;
+    }
+    
+    private async Task ProcessChange()
+    {
+        await redisService.RemoveAsync(NewsCacheKey);
     }
 }

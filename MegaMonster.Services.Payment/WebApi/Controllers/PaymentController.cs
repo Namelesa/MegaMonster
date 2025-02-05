@@ -1,9 +1,9 @@
-using MegaMonster.Services.Payment.Dto_s;
 using MegaMonster.Services.Payment.Infrastructure.Service;
+using MegaMonster.Services.Payment.WebApi.Dto_s;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
-namespace MegaMonster.Services.Payment.Controllers;
+namespace MegaMonster.Services.Payment.WebApi.Controllers;
 
 [ApiController]
 [Route("api/payment")]

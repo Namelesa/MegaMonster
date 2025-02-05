@@ -35,7 +35,7 @@ public class TicketController(TicketsService ticketsService) : ControllerBase
     {
         var config = await ticketsService.GetConfigurationForUser(ticketDto.UserType);
             
-        var ticket = new Ticket(ticketDto.UserType, ticketDto.DateTimeStart, config)
+        var ticket = new Ticket(ticketDto.UserName, ticketDto.UserType, ticketDto.DateTimeStart, config, ticketDto.UserId)
         { 
             // add user info
         };

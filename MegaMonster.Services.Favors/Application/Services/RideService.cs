@@ -1,29 +1,36 @@
 using MegaMonster.Services.Favors.Application.OperationResult;
 using MegaMonster.Services.Favors.Core.Interfaces;
 using MegaMonster.Services.Favors.Core.Models;
+using MegaMonster.Services.Favors.Infrastructure;
 
 namespace MegaMonster.Services.Favors.Application.Services;
 
-public class RideService(IRideRepository rideRepository)
+public class RideService(IRideRepository rideRepository, IRedisService redisService)
 {
-    public async Task<IEnumerable<Ride>> GetAllRides() => await rideRepository.GetAll();
-    
-    public async Task<Ride?> GetRideById(int id) => await rideRepository.GetRideById(id);
+    private const string RideCacheKey = "All_Rides";
 
-    public async Task<Ride?> GetRideByName(string name) => await rideRepository.GetRideByName(name);
+    public async Task<IEnumerable<Ride>> GetAllRides() => 
+        await GetOrSetCache(RideCacheKey, () => rideRepository.GetAll()!);
+    
+    public async Task<Ride?> GetRideById(int id) => 
+        await GetOrSetCache($"Ride_{id}", () => rideRepository.GetRideById(id));
+
+    public async Task<Ride?> GetRideByName(string name) => 
+        await GetOrSetCache($"Ride_{name}", () => rideRepository.GetRideByName(name));
     
     public async Task<ResultOperation> AddRide(Ride ride)
     {
         if (string.IsNullOrWhiteSpace(ride.Name)) 
             return ResultOperation.Fail("Ride name cannot be empty.");
 
-        var existingCategory = await rideRepository.GetRideByName(ride.Name);
-        if (existingCategory is not null)
+        if (await rideRepository.GetRideByName(ride.Name) is not null)
             return ResultOperation.Fail($"Ride with name '{ride.Name}' already exists.");
         
-        return await rideRepository.AddAsync(ride)
-            ? ResultOperation.Ok()
-            : ResultOperation.Fail("Error adding ride.");
+        var result = await rideRepository.AddAsync(ride);
+        if (!result) return ResultOperation.Fail("Error adding ride.");
+        
+        await ProcessChange(ride.Name);
+        return ResultOperation.Ok();
     }
     
     public async Task<ResultOperation> EditRide(string currentName, string newName, int categoryId, string status, double rating)
@@ -42,9 +49,12 @@ public class RideService(IRideRepository rideRepository)
         currentRide.Rating = rating;
         currentRide.ClientStatus = status;
         currentRide.CategoryId = categoryId;
-        return await rideRepository.EditAsync(currentRide)
-            ? ResultOperation.Ok()
-            : ResultOperation.Fail("Error updating ride.");
+
+        var result = await rideRepository.EditAsync(currentRide);
+        if (!result) return ResultOperation.Fail("Error updating ride.");
+        
+        await ProcessChange(currentName, newName);
+        return ResultOperation.Ok();
     }
     
     public async Task<ResultOperation> DeleteRide(string rideName)
@@ -53,9 +63,31 @@ public class RideService(IRideRepository rideRepository)
         if (ride is null)
             return ResultOperation.Fail($"Ride '{rideName}' not found.");
 
-        return await rideRepository.DeleteAsync(ride)
-            ? ResultOperation.Ok()
-            : ResultOperation.Fail("Error deleting ride.");
+        var result = await rideRepository.DeleteAsync(ride);
+        if (!result) return ResultOperation.Fail("Error deleting ride.");
+        
+        await ProcessChange(rideName);
+        return ResultOperation.Ok();
     }
     
+    private async Task<T?> GetOrSetCache<T>(string key, Func<Task<T?>> getData, TimeSpan? expiration = null)
+    {
+        var cachedData = await redisService.GetAsync<T>(key);
+        if (cachedData is not null) return cachedData;
+        
+        var data = await getData();
+        if (data is not null)
+            await redisService.SetAsync(key, data, expiration ?? TimeSpan.FromMinutes(60));
+        
+        return data;
+    }
+    
+    private async Task ProcessChange(params string[] rideNames)
+    {
+        await redisService.RemoveAsync(RideCacheKey);
+        foreach (var rideName in rideNames)
+        {
+            await redisService.RemoveAsync($"Ride_{rideName}");
+        }
+    }
 }

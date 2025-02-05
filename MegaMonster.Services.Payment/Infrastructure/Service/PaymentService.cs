@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
-using MegaMonster.Services.Payment.Data;
-using MegaMonster.Services.Payment.Models;
+using MegaMonster.Services.Payment.Core.Models;
+using MegaMonster.Services.Payment.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
