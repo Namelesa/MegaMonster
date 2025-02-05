@@ -1,4 +1,4 @@
-namespace MegaMonster.Services.Card.Models;
+namespace MegaMonster.Services.Card.Core.Models;
 
 public class Order : BaseModel
 {

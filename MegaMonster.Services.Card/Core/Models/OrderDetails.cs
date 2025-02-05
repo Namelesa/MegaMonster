@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace MegaMonster.Services.Card.Models;
+namespace MegaMonster.Services.Card.Core.Models;
 
 public class OrderDetails : BaseModel
 {

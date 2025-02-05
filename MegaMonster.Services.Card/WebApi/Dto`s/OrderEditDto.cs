@@ -1,4 +1,4 @@
-namespace MegaMonster.Services.Card.Dto_s;
+namespace MegaMonster.Services.Card.WebApi.Dto_s;
 
 public class OrderEditDto
 {
