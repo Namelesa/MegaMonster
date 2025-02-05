@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MegaMonster.Services.Auth.Dto_s;
+namespace MegaMonster.Services.Auth.WebApi.Dto_s;
 
 public class RegisterDto
 {

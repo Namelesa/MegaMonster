@@ -1,7 +1,12 @@
 using System.Text;
-using MegaMonster.Services.Auth.Data;
-using MegaMonster.Services.Auth.JWT;
-using MegaMonster.Services.Auth.Models;
+using MegaMonster.Services.Auth.Application.Services;
+using MegaMonster.Services.Auth.Application.Validation;
+using MegaMonster.Services.Auth.Core.Interfaces;
+using MegaMonster.Services.Auth.Core.Models;
+using MegaMonster.Services.Auth.Infrastructure.JWT;
+using MegaMonster.Services.Auth.Persistence.Data;
+using MegaMonster.Services.Auth.Persistence.DbInitializer;
+using MegaMonster.Services.Auth.Persistence.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +30,7 @@ builder.Services.AddAuthentication(options =>
     {
         ValidIssuer = builder.Configuration["JWTConfig:Issuer"],
         ValidAudience = builder.Configuration["JWTConfig:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWTConfig:Key"])),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWTConfig:Key"] ?? string.Empty)),
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
@@ -35,8 +40,17 @@ builder.Services.AddAuthentication(options =>
 });
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<IRegisterRepository, RegisterRepository>();
+builder.Services.AddScoped<ILoginRepository, LoginRepository>();
+
+builder.Services.AddScoped<IDbInitializer, DbInitializer>();
+
+builder.Services.AddScoped<UserValidator>();
+
+builder.Services.AddScoped<AuthService>();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -71,6 +85,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+    await dbInitializer.Initialize();
 }
 
 app.UseHttpsRedirection();

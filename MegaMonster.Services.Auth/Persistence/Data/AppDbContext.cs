@@ -1,7 +1,7 @@
-using MegaMonster.Services.Auth.Models;
+using MegaMonster.Services.Auth.Core.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace MegaMonster.Services.Auth.Data;
+namespace MegaMonster.Services.Auth.Persistence.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
