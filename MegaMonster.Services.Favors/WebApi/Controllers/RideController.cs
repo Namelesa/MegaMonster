@@ -1,0 +1,71 @@
+using System.ComponentModel.DataAnnotations;
+using MegaMonster.Services.Favors.Application.Services;
+using MegaMonster.Services.Favors.Core.Models;
+using MegaMonster.Services.Favors.WebApi.Dto_s;
+using Microsoft.AspNetCore.Mvc;
+
+namespace MegaMonster.Services.Favors.WebApi.Controllers;
+
+[ApiController]
+[Route("api/Favors")]
+public class RideController(RideService rideService, CategoryService categoryService) : ControllerBase
+{
+    // Get Requests //
+    [HttpGet("rides")]
+    public async Task<IActionResult> GetRides()
+    {
+        var rides = await rideService.GetAllRides();
+        return Ok(rides);
+    }
+    
+    [HttpGet("ride/id/{rideId}")]
+    public async Task<IActionResult> GetRideById(int rideId)
+    {
+        if (rideId <= 0) return BadRequest("Invalid ride ID.");
+
+        var ride = await rideService.GetRideById(rideId);
+        return ride is not null ? Ok(ride) : NotFound($"Category with ID {rideId} not found.");
+    }
+    
+    [HttpGet("ride/name/{name}")]
+    public async Task<IActionResult> GetRideByName(string name)
+    {
+        var ride = await rideService.GetRideByName(name);
+        return ride is not null ? Ok(ride) : NotFound($"Ride with name '{name}' not found.");
+    }
+    
+    // Post Requests //
+    [HttpPost("ride/add")]
+    public async Task<IActionResult> AddRide([Required] RideAddDto rideDto)
+    {
+        var ride = new Ride(rideDto.RideName);
+        
+        var category = await categoryService.GetCategoryByName(rideDto.CategoryName);
+        if(category == null) return NotFound("Not found category with this name");
+        
+        ride.CategoryId = category.Id;
+        ride.ClientStatus = rideDto.Status;
+        ride.Rating = rideDto.Rating;
+        var result = await rideService.AddRide(ride);
+        return result.Success ? Ok("Add a new ride") : BadRequest(result.Message);
+    }
+    
+    // Put Requests //
+    [HttpPut("ride/edit/name/{currentName}")]
+    public async Task<IActionResult> EditRide(string currentName, [Required]RideDto rideDto)
+    {
+        var category = await categoryService.GetCategoryByName(rideDto.CategoryName);
+        if (category == null) return NotFound("Not found category with this name");
+
+        var result = await rideService.EditRide(currentName, rideDto.NewName, category.Id, rideDto.Status, rideDto.Rating);
+        return result.Success ? Ok("Edit ride") : BadRequest(result.Message);
+    }
+    
+    // Delete Requests // 
+    [HttpDelete("ride/delete/name/{rideName}")]
+    public async Task<IActionResult> DeleteRide(string rideName)
+    {
+        var result = await rideService.DeleteRide(rideName);
+        return result.Success ? Ok("Delete ride") : BadRequest(result.Message);
+    }
+}
