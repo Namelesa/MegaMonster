@@ -1,7 +1,7 @@
-using MegaMonster.Services.User.Models;
+using MegaMonster.Services.User.Core.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace MegaMonster.Services.User.Data;
+namespace MegaMonster.Services.User.Persistence.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {

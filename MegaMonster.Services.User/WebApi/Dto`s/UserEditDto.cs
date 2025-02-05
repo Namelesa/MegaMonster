@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MegaMonster.Services.User.Dto_s;
+namespace MegaMonster.Services.User.WebApi.Dto_s;
 
 public class UserEditDto
 {
