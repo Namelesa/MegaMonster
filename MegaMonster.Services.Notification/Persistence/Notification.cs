@@ -1,9 +1,10 @@
-using MegaMonster.Services.Notification.Dto_s;
+using MegaMonster.Services.Notification.Core.Interfaces;
+using MegaMonster.Services.Notification.Core.Models;
 using MegaMonster.Services.Notification.Infrastructure.MailJet;
 using MegaMonster.Services.Notification.Infrastructure.Reader;
 using Microsoft.AspNetCore.Identity.UI.Services;
 
-namespace MegaMonster.Services.Notification.Infrastructure.Service;
+namespace MegaMonster.Services.Notification.Persistence;
 
 public class Notification(IEmailSender emailSender, ITemplateReader templateReader) : INotification
 {

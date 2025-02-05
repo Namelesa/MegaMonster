@@ -1,6 +1,8 @@
+using MegaMonster.Services.Notification.Application.Validator;
+using MegaMonster.Services.Notification.Core.Interfaces;
 using MegaMonster.Services.Notification.Infrastructure.MailJet;
 using MegaMonster.Services.Notification.Infrastructure.Reader;
-using MegaMonster.Services.Notification.Infrastructure.Service;
+using MegaMonster.Services.Notification.Persistence;
 using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +16,7 @@ builder.Services.AddControllers();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<INotification, Notification>();
 builder.Services.AddTransient<ITemplateReader, TemplateReader>();
+builder.Services.AddScoped<UserValidator>();
 
 var app = builder.Build();
 

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MegaMonster.Services.Notification.Dto_s;
+namespace MegaMonster.Services.Notification.Core.Models;
 
 public class UserDto(string firstName, string lastName, string email, string telegram)
 {
