@@ -17,10 +17,9 @@ public class Notification(IEmailSender emailSender, ITemplateReader templateRead
         {
             return false;
         }
-        
-        htmlBody = htmlBody.Replace("{name}", string.Join(" ", userDto.FirstName, userDto.LastName))
-            .Replace("{email}", userDto.Email)
-            .Replace("{telegram}", userDto.Telegram);
+
+        htmlBody = htmlBody.Replace("{name}", string.Join(" ", userDto.UserName))
+            .Replace("{email}", userDto.Email);
 
         await emailSender.SendEmailAsync(userDto.Email, Wc.ConfirmEmail, htmlBody);
         return true;
@@ -35,9 +34,8 @@ public class Notification(IEmailSender emailSender, ITemplateReader templateRead
             return false;
         }
         
-        htmlBody = htmlBody.Replace("{name}", string.Join(" ", userDto.FirstName, userDto.LastName))
+        htmlBody = htmlBody.Replace("{name}", string.Join(" ", userDto.UserName))
             .Replace("{email}", userDto.Email)
-            .Replace("{telegram}", userDto.Telegram)
             .Replace("{url}", url);
 
         await emailSender.SendEmailAsync(userDto.Email, Wc.Information, htmlBody);
@@ -53,7 +51,7 @@ public class Notification(IEmailSender emailSender, ITemplateReader templateRead
             return false;
         }
 
-        htmlBody = htmlBody.Replace("{name}", string.Join(" ", userDto.FirstName, userDto.LastName))
+        htmlBody = htmlBody.Replace("{name}", string.Join(" ", userDto.UserName))
             .Replace("{email}", userDto.Email)
             .Replace("{reason}", reason); 
 

@@ -2,6 +2,7 @@ using MegaMonster.Services.Favors.Application.OperationResult;
 using MegaMonster.Services.Favors.Core.Interfaces;
 using MegaMonster.Services.Favors.Core.Models;
 using MegaMonster.Services.Favors.Infrastructure;
+using MegaMonster.Services.Favors.Infrastructure.Redis;
 
 namespace MegaMonster.Services.Favors.Application.Services;
 

@@ -1,4 +1,4 @@
-namespace MegaMonster.Services.Card.Infrastructure;
+namespace MegaMonster.Services.Card.Infrastructure.Redis;
 
 public interface IRedisService
 {

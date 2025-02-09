@@ -9,14 +9,15 @@
     <ItemGroup>
         <PackageReference Include="FluentValidation" Version="11.11.0" />
         <PackageReference Include="Mailjet.Api" Version="3.0.0" />
+        <PackageReference Include="MassTransit" Version="8.3.6" />
+        <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.6" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.3"/>
         <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.12" />
-        <PackageReference Include="RabbitMQ.Client" Version="7.0.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Infrastructure\Redis\" />
+      <ProjectReference Include="..\MessagingModels\MessagingModels.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,12 +1,17 @@
+using MassTransit;
 using MegaMonster.Services.User.Application.ResultOperation;
 using MegaMonster.Services.User.Application.Validation.UserValidator;
 using MegaMonster.Services.User.Core.Interfaces;
 using MegaMonster.Services.User.Core.Models;
-using MegaMonster.Services.User.Infrastructure;
+using MegaMonster.Services.User.Infrastructure.Redis;
+using MessagingModels.UserNotification;
 
 namespace MegaMonster.Services.User.Application.Services;
 
-public class UserService(IUserRepository userRepository, UserValidation validation, IRedisService redisService)
+public class UserService(IUserRepository userRepository, 
+    UserValidation validation, 
+    IRedisService redisService,
+    IPublishEndpoint publishEndpoint)
 {
     private const string UsersCacheKey = "All_Users";
 
@@ -19,9 +24,14 @@ public class UserService(IUserRepository userRepository, UserValidation validati
             var validationResult = await ValidateUser(user);
             if (!validationResult.Success) return validationResult;
 
-            return await userRepository.AddAsync(user)
-                ? OperationResult.Ok()
-                : OperationResult.Fail("Failed to add user.");
+            bool result = await userRepository.AddAsync(user);
+            if (!result) return OperationResult.Fail("Failed to add user.");
+            
+            var notify = new UserNotificationBase(user.UserName, user.Email);
+            Console.WriteLine($"Publishing notification for {user.UserName}, ID: {Guid.NewGuid()}");
+            await publishEndpoint.Publish(notify);
+            
+            return OperationResult.Ok();
         });
 
     public async Task<OperationResult> EditUser(string login, string userName, string email, string phoneNumber, string newLogin) =>
@@ -40,15 +50,20 @@ public class UserService(IUserRepository userRepository, UserValidation validati
                 : OperationResult.Fail("Failed to edit user.");
         });
 
-    public async Task<OperationResult> DeleteUser(string login) =>
+    public async Task<OperationResult> DeleteUser(string login, string reason) =>
         await HandleDatabaseOperation(async () =>
         {
             var user = await userRepository.GetUserByLoginAsync(login);
             if (user is null) return OperationResult.Fail($"User with login '{login}' not found.");
 
-            return await userRepository.DeleteAsync(user)
-                ? OperationResult.Ok()
-                : OperationResult.Fail("Failed to delete user.");
+            bool result = await userRepository.DeleteAsync(user);
+            if (!result) return OperationResult.Fail("Failed to delete user.");
+            
+            var notify = new UserBan(user.Login, user.Email, reason);
+            
+            await publishEndpoint.Publish(notify);
+            
+            return OperationResult.Ok();
         });
 
     private async Task<OperationResult> ValidateUser(Users user)

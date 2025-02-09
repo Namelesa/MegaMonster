@@ -1,10 +1,14 @@
+using MassTransit;
 using MegaMonster.Services.Card.Application.Services;
 using MegaMonster.Services.Card.Core.Interfaces;
 using MegaMonster.Services.Card.Infrastructure;
+using MegaMonster.Services.Card.Infrastructure.MessageBroker;
+using MegaMonster.Services.Card.Infrastructure.Redis;
 using MegaMonster.Services.Card.Persistence.Data;
 using MegaMonster.Services.Card.Persistence.DbInitializer;
 using MegaMonster.Services.Card.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +41,26 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
     });
+
+builder.Services.Configure<MessageBrokerSettings>(
+    builder.Configuration.GetSection("MessageBroker"));
+
+builder.Services.AddSingleton(sp =>
+    sp.GetRequiredService<IOptions<MessageBrokerSettings>>().Value);
+
+builder.Services.AddMassTransit(busConfiguration =>
+{
+    busConfiguration.UsingRabbitMq((context, configurator) =>
+    {
+        MessageBrokerSettings settings = context.GetRequiredService<MessageBrokerSettings>();
+        
+        configurator.Host(new Uri(settings.Host), h =>
+        {
+            h.Username(settings.UserName);
+            h.Password(settings.Password);
+        });
+    });
+});
 
 var app = builder.Build();
 

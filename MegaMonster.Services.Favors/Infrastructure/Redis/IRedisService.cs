@@ -1,4 +1,4 @@
-namespace MegaMonster.Services.Favors.Infrastructure;
+namespace MegaMonster.Services.Favors.Infrastructure.Redis;
 
 public interface IRedisService
 {

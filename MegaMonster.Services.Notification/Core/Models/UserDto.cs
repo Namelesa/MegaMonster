@@ -2,17 +2,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MegaMonster.Services.Notification.Core.Models;
 
-public class UserDto(string firstName, string lastName, string email, string telegram)
+public class UserDto(string userName, string email)
 {
     [Required]
-    public string FirstName { get; set; } = firstName;
-
-    [Required]
-    public string LastName { get; set; } = lastName;
-
+    public string UserName { get; set; } = userName;
+    
     [Required]
     public string Email { get; set; } = email;
-
-    [Required]
-    public string Telegram { get; set; } = telegram;
 }

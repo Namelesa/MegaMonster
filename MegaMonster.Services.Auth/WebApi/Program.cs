@@ -1,15 +1,18 @@
 using System.Text;
+using MassTransit;
 using MegaMonster.Services.Auth.Application.Services;
 using MegaMonster.Services.Auth.Application.Validation;
 using MegaMonster.Services.Auth.Core.Interfaces;
 using MegaMonster.Services.Auth.Core.Models;
 using MegaMonster.Services.Auth.Infrastructure.JWT;
+using MegaMonster.Services.Auth.Infrastructure.MessageBroker;
 using MegaMonster.Services.Auth.Persistence.Data;
 using MegaMonster.Services.Auth.Persistence.DbInitializer;
 using MegaMonster.Services.Auth.Persistence.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -77,6 +80,26 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<PasswordHasher<Users>>();
+
+builder.Services.Configure<MessageBrokerSettings>(
+    builder.Configuration.GetSection("MessageBroker"));
+
+builder.Services.AddSingleton(sp =>
+    sp.GetRequiredService<IOptions<MessageBrokerSettings>>().Value);
+
+builder.Services.AddMassTransit(busConfiguration =>
+{
+    busConfiguration.UsingRabbitMq((context, configurator) =>
+    {
+        MessageBrokerSettings settings = context.GetRequiredService<MessageBrokerSettings>();
+        
+        configurator.Host(new Uri(settings.Host), h =>
+        {
+            h.Username(settings.UserName);
+            h.Password(settings.Password);
+        });
+    });
+});
 
 var app = builder.Build();
 

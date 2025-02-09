@@ -1,12 +1,19 @@
+using MassTransit;
 using MegaMonster.Services.Auth.Application.ResultOperation;
 using MegaMonster.Services.Auth.Application.Validation;
 using MegaMonster.Services.Auth.Core.Interfaces;
 using MegaMonster.Services.Auth.Core.Models;
 using MegaMonster.Services.Auth.Infrastructure.JWT;
+using MessagingModels.UserAdding;
 
 namespace MegaMonster.Services.Auth.Application.Services;
 
-public class AuthService(IRegisterRepository registerRepository, ILoginRepository loginRepository, JwtService jwtService, UserValidator userValidator)
+public class AuthService(
+    IRegisterRepository registerRepository, 
+    ILoginRepository loginRepository, 
+    JwtService jwtService, 
+    UserValidator userValidator,
+    IPublishEndpoint publishEndpoint)
 {
     public async Task<OperationResult> RegisterUser(string password, string email, string userName, string login, string phoneNumber)
     {
@@ -31,7 +38,12 @@ public class AuthService(IRegisterRepository registerRepository, ILoginRepositor
         }
         
         bool result = await registerRepository.RegisterUser(user);
-        return result ? OperationResult.Ok("") : OperationResult.Fail("Can not register user");
+        if (!result) return OperationResult.Fail("Can not register user");
+        
+        var userMessage = new UserModelMessage(user.Login, user.UserName, user.Email, user.PasswordHash, user.PhoneNumber);
+        await publishEndpoint.Publish(userMessage);
+        
+        return OperationResult.Ok("");
     }
     
     public async Task<OperationResult> LoginUser(string password, string email, string login)

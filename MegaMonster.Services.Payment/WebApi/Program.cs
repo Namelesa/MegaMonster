@@ -1,7 +1,10 @@
+using MassTransit;
+using MegaMonster.Services.Payment.Infrastructure.MessageBroker;
 using MegaMonster.Services.Payment.Infrastructure.Service;
 using MegaMonster.Services.Payment.Persistence.Data;
 using MegaMonster.Services.Payment.Persistence.DbInitializer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +37,26 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped<IDbInitializer, DbInitializer>();
+
+builder.Services.Configure<MessageBrokerSettings>(
+    builder.Configuration.GetSection("MessageBroker"));
+
+builder.Services.AddSingleton(sp =>
+    sp.GetRequiredService<IOptions<MessageBrokerSettings>>().Value);
+
+builder.Services.AddMassTransit(busConfiguration =>
+{
+    busConfiguration.UsingRabbitMq((context, configurator) =>
+    {
+        MessageBrokerSettings settings = context.GetRequiredService<MessageBrokerSettings>();
+        
+        configurator.Host(new Uri(settings.Host), h =>
+        {
+            h.Username(settings.UserName);
+            h.Password(settings.Password);
+        });
+    });
+});
 
 var app = builder.Build();
 

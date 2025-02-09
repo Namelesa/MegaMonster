@@ -62,9 +62,9 @@ public class UserController(UserService userService, RoleService roleService) : 
     }
     
     [HttpDelete("ban")]
-    public async Task<IActionResult> DeleteUser([Required] string login)
+    public async Task<IActionResult> DeleteUser([Required] string login, [Required] string reason)
     {
-        var result = await userService.DeleteUser(login);
+        var result = await userService.DeleteUser(login, reason);
         return result.Success ? Ok("User banned") : BadRequest(new { error = result.Message });
     }
     
@@ -80,7 +80,7 @@ public class UserController(UserService userService, RoleService roleService) : 
     {
         var currentRole = await roleService.FindRoleByNameAsync(role);
         if (currentRole == null) return OperationResult.Fail("Role not found.");
-
+        
         Users user = new Users(userDto.Login)
         {
             UserName = userDto.UserName,

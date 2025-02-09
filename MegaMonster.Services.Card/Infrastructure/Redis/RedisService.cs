@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 
-namespace MegaMonster.Services.User.Infrastructure;
+namespace MegaMonster.Services.Card.Infrastructure.Redis;
 
 public class RedisService(IDistributedCache cache) : IRedisService
 {

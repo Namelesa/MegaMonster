@@ -1,11 +1,13 @@
+using MassTransit;
 using MegaMonster.Services.Favors.Application.Services;
 using MegaMonster.Services.Favors.Core.Interfaces;
-using MegaMonster.Services.Favors.Core.Models;
-using MegaMonster.Services.Favors.Infrastructure;
+using MegaMonster.Services.Favors.Infrastructure.MessageBroker;
+using MegaMonster.Services.Favors.Infrastructure.Redis;
 using MegaMonster.Services.Favors.Persistence.Data;
 using MegaMonster.Services.Favors.Persistence.DbInitializer;
 using MegaMonster.Services.Favors.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +40,26 @@ builder.Services.AddScoped<INewsRepository, NewsRepository>();
 builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 
 builder.Services.AddScoped<IRedisService, RedisService>();
+
+builder.Services.Configure<MessageBrokerSettings>(
+    builder.Configuration.GetSection("MessageBroker"));
+
+builder.Services.AddSingleton(sp =>
+    sp.GetRequiredService<IOptions<MessageBrokerSettings>>().Value);
+
+builder.Services.AddMassTransit(busConfiguration =>
+{
+    busConfiguration.UsingRabbitMq((context, configurator) =>
+    {
+        MessageBrokerSettings settings = context.GetRequiredService<MessageBrokerSettings>();
+        
+        configurator.Host(new Uri(settings.Host), h =>
+        {
+            h.Username(settings.UserName);
+            h.Password(settings.Password);
+        });
+    });
+});
 
 var app = builder.Build();
 

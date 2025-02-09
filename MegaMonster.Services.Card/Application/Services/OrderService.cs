@@ -2,6 +2,7 @@ using MegaMonster.Services.Card.Application.ResultOperation;
 using MegaMonster.Services.Card.Core.Interfaces;
 using MegaMonster.Services.Card.Core.Models;
 using MegaMonster.Services.Card.Infrastructure;
+using MegaMonster.Services.Card.Infrastructure.Redis;
 
 namespace MegaMonster.Services.Card.Application.Services;
 
