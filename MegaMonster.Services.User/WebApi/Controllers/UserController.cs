@@ -3,6 +3,7 @@ using MegaMonster.Services.User.Application.ResultOperation;
 using MegaMonster.Services.User.Application.Services;
 using MegaMonster.Services.User.Core.Models;
 using MegaMonster.Services.User.WebApi.Dto_s;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MegaMonster.Services.User.WebApi.Controllers;
@@ -12,13 +13,16 @@ namespace MegaMonster.Services.User.WebApi.Controllers;
 public class UserController(UserService userService, RoleService roleService) : ControllerBase
 {
     // Get Requests
+    [Authorize(Roles = "Admin")]
     [HttpGet("getAllRoles")]
     public async Task<IActionResult> GetRoles() => Ok(await roleService.GetAllRoles());
     
+    [Authorize(Roles = "Admin")]
     [HttpGet("getAllUsers")]
     public async Task<IActionResult> GetUsers() => Ok(await userService.GetAllUsers());
     
     // Post Requests
+    [Authorize(Roles = "Admin")]
     [HttpPost("addRole")]
     public async Task<IActionResult> AddRole([FromBody, Required] RoleDto roleDto)
     {
@@ -31,6 +35,7 @@ public class UserController(UserService userService, RoleService roleService) : 
         return result.Success ? Ok(new { message = "Role is added" }) : BadRequest(new { error = result.Message });
     }
     
+    [Authorize]
     [HttpPost("addUser")]
     public async Task<IActionResult> AddUser([FromBody, Required] UserDto userDto, [Required] string role)
     {
@@ -39,6 +44,7 @@ public class UserController(UserService userService, RoleService roleService) : 
     }
     
     // Put Requests 
+    [Authorize(Roles = "Admin")]
     [HttpPut("editRole")]
     public async Task<IActionResult> EditRole([Required] string oldName, [Required] string newName)
     {
@@ -46,6 +52,7 @@ public class UserController(UserService userService, RoleService roleService) : 
         return result.Success ? Ok(new { message = "Role is edited" }) : BadRequest(new { error = result.Message });
     }
     
+    [Authorize]
     [HttpPut("editUser")]
     public async Task<IActionResult> EditUser([Required, FromBody] UserEditDto userEditDto, [Required] string login)
     {
@@ -54,6 +61,7 @@ public class UserController(UserService userService, RoleService roleService) : 
     }
     
     // Delete Requests
+    [Authorize(Roles = "Admin")]
     [HttpDelete("delete")]
     public async Task<IActionResult> DeleteRole([Required] string name)
     {
@@ -61,6 +69,7 @@ public class UserController(UserService userService, RoleService roleService) : 
         return result.Success ? Ok(new { message = "Role deleted" }) : BadRequest(new { error = result.Message });
     }
     
+    [Authorize(Roles = "Admin")]
     [HttpDelete("ban")]
     public async Task<IActionResult> DeleteUser([Required] string login, [Required] string reason)
     {
@@ -69,6 +78,7 @@ public class UserController(UserService userService, RoleService roleService) : 
     }
     
     // Admin
+    [Authorize(Roles = "Admin")]
     [HttpPost("createAdmin")]
     public async Task<IActionResult> AddUserAdmin([FromBody, Required] UserDto userDto, string role = "Admin")
     {
@@ -92,7 +102,7 @@ public class UserController(UserService userService, RoleService roleService) : 
             RoleId = currentRole.Id,
             PasswordHash = userDto.PasswordHash
         };
-
-        return await userService.AddUser(user);
+        await userService.AddUser(user);
+        return OperationResult.Ok();
     }
 }

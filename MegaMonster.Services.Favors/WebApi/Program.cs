@@ -1,3 +1,4 @@
+using System.Text;
 using MassTransit;
 using MegaMonster.Services.Favors.Application.Services;
 using MegaMonster.Services.Favors.Core.Interfaces;
@@ -6,13 +7,54 @@ using MegaMonster.Services.Favors.Infrastructure.Redis;
 using MegaMonster.Services.Favors.Persistence.Data;
 using MegaMonster.Services.Favors.Persistence.DbInitializer;
 using MegaMonster.Services.Favors.Persistence.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = builder.Configuration["JWTConfig:Issuer"],
+            ValidAudience = builder.Configuration["JWTConfig:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWTConfig:Key"] ?? string.Empty)),
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (context.Request.Cookies.ContainsKey("access_token"))
+                {
+                    context.Token = context.Request.Cookies["access_token"];
+                }
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
@@ -78,5 +120,8 @@ using (var scope = app.Services.CreateScope())
 
 app.MapControllers();
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.Run();

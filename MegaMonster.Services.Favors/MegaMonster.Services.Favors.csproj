@@ -11,6 +11,7 @@
         <PackageReference Include="FluentValidation.WebAPI" Version="8.6.1" />
         <PackageReference Include="MassTransit" Version="8.3.6" />
         <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.6" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.12" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.3"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
@@ -28,7 +29,12 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Application\Messaging\" />
       <Folder Include="Core\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MessagingModels\MessagingModels.csproj" />
     </ItemGroup>
 
 </Project>

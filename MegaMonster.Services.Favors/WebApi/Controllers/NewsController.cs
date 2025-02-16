@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using MegaMonster.Services.Favors.Application.Services;
 using MegaMonster.Services.Favors.Core.Models;
 using MegaMonster.Services.Favors.WebApi.Dto_s;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MegaMonster.Services.Favors.WebApi.Controllers;
@@ -11,6 +12,7 @@ namespace MegaMonster.Services.Favors.WebApi.Controllers;
 public class NewsController(NewsService newsService) : ControllerBase
 {
     // Get Requests //
+    [Authorize]
     [HttpGet("news")]
     public async Task<IActionResult> GetNews()
     {
@@ -19,6 +21,7 @@ public class NewsController(NewsService newsService) : ControllerBase
     }
     
     // Post Requests //
+    [Authorize(Roles = "Admin")]
     [HttpPost("news/add")]
     public async Task<IActionResult> AddNews([Required, FromBody] NewsDto newsDto)
     {
@@ -28,6 +31,7 @@ public class NewsController(NewsService newsService) : ControllerBase
     }
     
     // Put Requests //
+    [Authorize(Roles = "Admin")]
     [HttpPut("news/edit/id/{id}")]
     public async Task<IActionResult> EditNews(int id, [Required, FromBody] NewsDto newsDto)
     {
@@ -36,6 +40,7 @@ public class NewsController(NewsService newsService) : ControllerBase
     }
     
     // Delete Requests // 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("news/delete/id/{id}")]
     public async Task<IActionResult> DeleteNews(int id)
     {

@@ -14,7 +14,7 @@ public class JwtService(IConfiguration config, ILogger<JwtService> logger)
     private readonly ILogger<JwtService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly PasswordHasher<Users> _passwordHasher = new();
 
-    public async Task<string?> AuthenticateAsync(Users? user, string passwordRequest)
+    public async Task<string?> AuthenticateAsync(Users? user, string passwordRequest, string role)
     {
         if (!ValidateUserCredentials(user, passwordRequest))
         {
@@ -24,7 +24,7 @@ public class JwtService(IConfiguration config, ILogger<JwtService> logger)
 
         try
         {
-            var token = GenerateJwtToken(user);
+            var token = GenerateJwtToken(user, role);
             return await Task.FromResult(token);
         }
         catch (Exception ex)
@@ -42,7 +42,7 @@ public class JwtService(IConfiguration config, ILogger<JwtService> logger)
         return passwordVerificationResult == PasswordVerificationResult.Success;
     }
 
-    private string GenerateJwtToken(Users? user)
+    private string GenerateJwtToken(Users? user, string role)
     {
         var issuer = _config["JWTConfig:Issuer"];
         var audience = _config["JWTConfig:Audience"];
@@ -62,7 +62,8 @@ public class JwtService(IConfiguration config, ILogger<JwtService> logger)
         {
             Subject = new ClaimsIdentity(new[]
             {
-                new Claim(JwtRegisteredClaimNames.Name, user.Login)
+                new Claim(JwtRegisteredClaimNames.Name, user.Login),
+                new Claim(ClaimTypes.Role, role)
             }),
             Expires = tokenExpiry,
             Issuer = issuer,

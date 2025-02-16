@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using MegaMonster.Services.Favors.Application.Services;
 using MegaMonster.Services.Favors.Core.Models;
 using MegaMonster.Services.Favors.WebApi.Dto_s;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MegaMonster.Services.Favors.WebApi.Controllers;
@@ -11,6 +12,7 @@ namespace MegaMonster.Services.Favors.WebApi.Controllers;
 public class RideController(RideService rideService, CategoryService categoryService) : ControllerBase
 {
     // Get Requests //
+    [Authorize]
     [HttpGet("rides")]
     public async Task<IActionResult> GetRides()
     {
@@ -18,6 +20,7 @@ public class RideController(RideService rideService, CategoryService categorySer
         return Ok(rides);
     }
     
+    [Authorize]
     [HttpGet("ride/id/{rideId}")]
     public async Task<IActionResult> GetRideById(int rideId)
     {
@@ -27,6 +30,7 @@ public class RideController(RideService rideService, CategoryService categorySer
         return ride is not null ? Ok(ride) : NotFound($"Category with ID {rideId} not found.");
     }
     
+    [Authorize]
     [HttpGet("ride/name/{name}")]
     public async Task<IActionResult> GetRideByName(string name)
     {
@@ -35,6 +39,7 @@ public class RideController(RideService rideService, CategoryService categorySer
     }
     
     // Post Requests //
+    [Authorize(Roles = "Admin")]
     [HttpPost("ride/add")]
     public async Task<IActionResult> AddRide([Required] RideAddDto rideDto)
     {
@@ -51,6 +56,7 @@ public class RideController(RideService rideService, CategoryService categorySer
     }
     
     // Put Requests //
+    [Authorize(Roles = "Admin")]
     [HttpPut("ride/edit/name/{currentName}")]
     public async Task<IActionResult> EditRide(string currentName, [Required]RideDto rideDto)
     {
@@ -61,7 +67,8 @@ public class RideController(RideService rideService, CategoryService categorySer
         return result.Success ? Ok("Edit ride") : BadRequest(result.Message);
     }
     
-    // Delete Requests // 
+    // Delete Requests //
+    [Authorize(Roles = "Admin")]
     [HttpDelete("ride/delete/name/{rideName}")]
     public async Task<IActionResult> DeleteRide(string rideName)
     {

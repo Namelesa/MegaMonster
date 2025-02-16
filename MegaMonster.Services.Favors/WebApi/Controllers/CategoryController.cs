@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using MegaMonster.Services.Favors.Application.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MegaMonster.Services.Favors.WebApi.Controllers;
@@ -9,6 +10,7 @@ namespace MegaMonster.Services.Favors.WebApi.Controllers;
 public class CategoryController(CategoryService categoryService) : ControllerBase
 {
     // GET Requests
+    [Authorize]
     [HttpGet("categories")]
     public async Task<IActionResult> GetCategories()
     {
@@ -16,6 +18,7 @@ public class CategoryController(CategoryService categoryService) : ControllerBas
         return Ok(categories);
     }
 
+    [Authorize]
     [HttpGet("category/id/{categoryId}")]
     public async Task<IActionResult> GetCategoryById(int categoryId)
     {
@@ -24,7 +27,8 @@ public class CategoryController(CategoryService categoryService) : ControllerBas
         var category = await categoryService.GetCategoryById(categoryId);
         return category is not null ? Ok(category) : NotFound($"Category with ID {categoryId} not found.");
     }
-
+    
+    [Authorize]
     [HttpGet("category/name/{name}")]
     public async Task<IActionResult> GetCategoryByName(string name)
     {
@@ -33,6 +37,7 @@ public class CategoryController(CategoryService categoryService) : ControllerBas
     }
 
     // POST Requests
+    [Authorize(Roles = "Admin")]
     [HttpPost("category/add")]
     public async Task<IActionResult> AddCategory([Required] string categoryName)
     {
@@ -41,6 +46,7 @@ public class CategoryController(CategoryService categoryService) : ControllerBas
     }
 
     // PUT Requests
+    [Authorize(Roles = "Admin")]
     [HttpPut("category/edit/name/{currentName}")]
     public async Task<IActionResult> EditCategory(string currentName, [Required] string newName)
     {
@@ -49,6 +55,7 @@ public class CategoryController(CategoryService categoryService) : ControllerBas
     }
 
     // DELETE Requests
+    [Authorize(Roles = "Admin")]
     [HttpDelete("category/delete/name/{currentName}")]
     public async Task<IActionResult> DeleteCategory(string currentName)
     {

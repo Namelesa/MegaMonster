@@ -1,14 +1,16 @@
+using System.Text;
 using MassTransit;
 using MegaMonster.Services.Card.Application.Services;
 using MegaMonster.Services.Card.Core.Interfaces;
-using MegaMonster.Services.Card.Infrastructure;
 using MegaMonster.Services.Card.Infrastructure.MessageBroker;
 using MegaMonster.Services.Card.Infrastructure.Redis;
 using MegaMonster.Services.Card.Persistence.Data;
 using MegaMonster.Services.Card.Persistence.DbInitializer;
 using MegaMonster.Services.Card.Persistence.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,6 +64,43 @@ builder.Services.AddMassTransit(busConfiguration =>
     });
 });
 
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = builder.Configuration["JWTConfig:Issuer"],
+            ValidAudience = builder.Configuration["JWTConfig:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWTConfig:Key"] ?? string.Empty)),
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (context.Request.Cookies.ContainsKey("access_token"))
+                {
+                    context.Token = context.Request.Cookies["access_token"];
+                }
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -79,4 +118,8 @@ using (var scope = app.Services.CreateScope())
 
 app.UseHttpsRedirection();
 app.MapControllers();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.Run();

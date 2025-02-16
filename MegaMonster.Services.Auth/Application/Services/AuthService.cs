@@ -15,7 +15,7 @@ public class AuthService(
     UserValidator userValidator,
     IPublishEndpoint publishEndpoint)
 {
-    public async Task<OperationResult> RegisterUser(string password, string email, string userName, string login, string phoneNumber)
+    public async Task<OperationResult> RegisterUser(string password, string email, string userName, string login, string phoneNumber, string? role = null)
     {
         var checkLoginAndEmail = await registerRepository.CheckLoginAndEmail(login, email);
         if (checkLoginAndEmail) return OperationResult.Fail("User with the same email or login already exists.");
@@ -29,6 +29,8 @@ public class AuthService(
             NormalizedEmail = email.ToUpper(),
             NormalizedUserName = userName.ToUpper(),
         };
+        if (role == null) user.Role = Wc.CustomerRole;
+        user.Role = Wc.AdminRole;
         user.PasswordHash = await registerRepository.HashPassword(password, user);
         
         var validationResult = await ValidateInfo(user);
@@ -40,7 +42,7 @@ public class AuthService(
         bool result = await registerRepository.RegisterUser(user);
         if (!result) return OperationResult.Fail("Can not register user");
         
-        var userMessage = new UserModelMessage(user.Login, user.UserName, user.Email, user.PasswordHash, user.PhoneNumber);
+        var userMessage = new UserModelMessage(user.Login, user.UserName, user.Email, user.PasswordHash, user.PhoneNumber, user.Role);
         await publishEndpoint.Publish(userMessage);
         
         return OperationResult.Ok("");
@@ -62,7 +64,7 @@ public class AuthService(
         
         user.PasswordHash = await registerRepository.HashPassword(password, user);
         
-        var res = await jwtService.AuthenticateAsync(user, password) is { Length: > 0 } token ? token : null;
+        var res = await jwtService.AuthenticateAsync(user, password, user.Role) is { Length: > 0 } token ? token : null;
         return OperationResult.Ok(res);
     }
     

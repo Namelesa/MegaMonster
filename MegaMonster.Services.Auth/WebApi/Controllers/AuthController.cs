@@ -31,8 +31,21 @@ public class AuthController(AuthService authService) : ControllerBase
         {
             return BadRequest(new { Error = "Invalid input data.", Details = ModelState });
         }
-
+        
         var result = await authService.LoginUser(loginDto.Password, loginDto.Email, loginDto.Login);
-        return result.Success ? Ok(result.Message) : BadRequest(result.Message);
+
+        if (!result.Success)
+        {
+            return BadRequest(new { error = result.Message });
+        }
+        
+        Response.Cookies.Append("access_token", result.Message, new CookieOptions
+        {
+            HttpOnly = true, 
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddHours(2)
+        });
+        return Ok(new { message = "Login successful" });
     }
 }

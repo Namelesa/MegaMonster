@@ -1,6 +1,7 @@
 using MegaMonster.Services.Notification.Application.Validator;
 using MegaMonster.Services.Notification.Core.Interfaces;
 using MegaMonster.Services.Notification.Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MegaMonster.Services.Notification.WebApi.Controllers;
@@ -21,6 +22,7 @@ public class NotificationController(INotification notificationService, UserValid
         return result ? Ok("Send confirm email") : BadRequest("Template file not found.");
     }
     
+    [Authorize]
     [HttpPost("bill")]
     public async Task<IActionResult> SendBillEmail([FromBody]UserDto userDto, string url)
     {
@@ -33,6 +35,7 @@ public class NotificationController(INotification notificationService, UserValid
         return result ? Ok("Send Bill email") : BadRequest("Template file not found.");
     }
     
+    [Authorize(Roles = "Admin")]
     [HttpPost("ban")]
     public async Task<IActionResult> SendBanEmail([FromBody]UserDto userDto, string reason)
     {
@@ -45,6 +48,7 @@ public class NotificationController(INotification notificationService, UserValid
         return result ? Ok("Send Ban email") : BadRequest("Template file not found.");
     }
     
+    [Authorize]
     [HttpPost("news")]
     public async Task<IActionResult> SendNewsEmail([FromBody]UserDto userDto)
     {

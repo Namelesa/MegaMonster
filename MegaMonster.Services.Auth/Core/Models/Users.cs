@@ -5,4 +5,5 @@ namespace MegaMonster.Services.Auth.Core.Models;
 public class Users : IdentityUser
 {
     public string Login { get; set; }
+    public string Role { get; set; }
 }

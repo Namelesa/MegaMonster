@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using MegaMonster.Services.Favors.Application.Services;
 using MegaMonster.Services.Favors.Core.Models;
 using MegaMonster.Services.Favors.WebApi.Dto_s;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MegaMonster.Services.Favors.WebApi.Controllers;
@@ -11,6 +12,7 @@ namespace MegaMonster.Services.Favors.WebApi.Controllers;
 public class TicketController(TicketsService ticketsService) : ControllerBase
 {
     // Get Requests //
+    [Authorize]
     [HttpGet("tickets/userType/{type}")]
     public async Task<IActionResult> GetTicketByUserStatus(string type)
     {
@@ -22,6 +24,7 @@ public class TicketController(TicketsService ticketsService) : ControllerBase
         return NotFound($"No tickets found for this user type: {type}");
     }
 
+    [Authorize]
     [HttpGet("tickets/configs")]
     public async Task<IActionResult> GetTicketsConfig()
     {
@@ -30,6 +33,7 @@ public class TicketController(TicketsService ticketsService) : ControllerBase
     }
     
     // Post Requests //
+    [Authorize]
     [HttpPost("ticket/buy")]
     public async Task<IActionResult> BuyTicket([Required] TicketDto ticketDto)
     {
@@ -45,6 +49,7 @@ public class TicketController(TicketsService ticketsService) : ControllerBase
             
     }
     
+    [Authorize(Roles = "Admin")]
     [HttpPost("ticket/addConfiguration")]
     public async Task<IActionResult> AddConfiguration([Required][FromBody] TicketConfigurationDto configDto)
     {
@@ -59,6 +64,7 @@ public class TicketController(TicketsService ticketsService) : ControllerBase
     }
     
     // Put Requests //
+    [Authorize(Roles = "Admin")]
     [HttpPut("ticket/edit/Configuration")]
     public async Task<IActionResult> EditConfiguration([Required] string userType, [Required] TicketConfigurationDto configurationDto)
     {
@@ -67,6 +73,7 @@ public class TicketController(TicketsService ticketsService) : ControllerBase
     }
     
     // Delete Requests //
+    [Authorize(Roles = "Admin")]
     [HttpDelete("ticket/delete/Configuration")]
     public async Task<IActionResult> DeleteConfiguration([Required] string userType)
     {
@@ -74,6 +81,7 @@ public class TicketController(TicketsService ticketsService) : ControllerBase
         return result.Success ? Ok("Delete config for this type") : BadRequest(result.Message);
     }
     
+    [Authorize(Roles = "Admin")]
     [HttpDelete("ticket/delete")]
     public async Task<IActionResult> DeleteTicket(int id)
     {

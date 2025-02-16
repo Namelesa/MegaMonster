@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using MegaMonster.Services.Card.Application.Services;
 using MegaMonster.Services.Card.Core.Models;
 using MegaMonster.Services.Card.WebApi.Dto_s;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MegaMonster.Services.Card.WebApi.Controllers;
@@ -11,6 +12,7 @@ namespace MegaMonster.Services.Card.WebApi.Controllers;
 public class CardController(OrderService orderService, OrderDetailsService orderDetailsService) : ControllerBase
 {
     // Get Requests //
+    [Authorize]
     [HttpGet("card")]
     public async Task<IActionResult> GetCard(string userId)
     {
@@ -31,6 +33,7 @@ public class CardController(OrderService orderService, OrderDetailsService order
     }
     
     // Post Requests //
+    [Authorize]
     [HttpPost("add")]
     public async Task<IActionResult> AddToCard([FromBody] OrderDto orderDto)
     {
@@ -74,6 +77,7 @@ public class CardController(OrderService orderService, OrderDetailsService order
     }
     
     // Put Requests //
+    [Authorize]
     [HttpPut("edit")]
     public async Task<IActionResult> EditCard([Required] int orderId, [Required] int orderDetailsId, [FromBody] OrderEditDto orderEditDto)
     {
@@ -104,6 +108,7 @@ public class CardController(OrderService orderService, OrderDetailsService order
     }
     
     // Delete Requests //
+    [Authorize]
     [HttpDelete("delete")]
     public async Task<IActionResult> DeleteCard([Required] int orderId)
     {

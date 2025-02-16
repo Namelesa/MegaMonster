@@ -12,7 +12,7 @@ public class UserConsumer(UserService userService, RoleService roleService) : IC
         var user = context.Message;
         Console.WriteLine($"User with name {user.UserName} was adding");
         
-        var currentRole = await roleService.FindRoleByNameAsync("Customer");
+        var currentRole = await roleService.FindRoleByNameAsync(user.Role);
         if (currentRole == null) return;
         
         Users userToAdd = new Users(user.Login)
