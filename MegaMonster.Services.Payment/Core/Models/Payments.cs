@@ -21,7 +21,7 @@ public class Payments
     public string TicketType { get; set; }
 
     [JsonProperty("amount")]
-    public decimal Sum { get; set; }
+    public double Sum { get; set; }
 
     [JsonProperty("count")]
     public int Count { get; set; }

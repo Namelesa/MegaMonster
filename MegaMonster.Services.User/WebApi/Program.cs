@@ -88,6 +88,7 @@ builder.Services.AddSingleton(sp =>
 builder.Services.AddMassTransit(busConfiguration =>
 {
     busConfiguration.AddConsumer<UserConsumer>();
+    busConfiguration.AddConsumer<UserInfoConsumer>();
     
     busConfiguration.UsingRabbitMq((context, configurator) =>
     {
@@ -102,6 +103,10 @@ builder.Services.AddMassTransit(busConfiguration =>
         configurator.ReceiveEndpoint("user-service-queue", e =>
         {
             e.ConfigureConsumer<UserConsumer>(context);
+        });
+        configurator.ReceiveEndpoint("user-get-login-queue", e =>
+        {
+            e.ConfigureConsumer<UserInfoConsumer>(context);
         });
     });
 });

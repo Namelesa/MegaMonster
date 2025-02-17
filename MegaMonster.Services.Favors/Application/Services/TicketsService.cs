@@ -1,14 +1,18 @@
+using MassTransit;
 using MegaMonster.Services.Favors.Application.OperationResult;
+using MegaMonster.Services.Favors.Core.Enums;
 using MegaMonster.Services.Favors.Core.Interfaces;
 using MegaMonster.Services.Favors.Core.Models;
 using MegaMonster.Services.Favors.Infrastructure.Redis;
+using MessagingModels.InfoCard;
 
 namespace MegaMonster.Services.Favors.Application.Services;
 
 public class TicketsService(
     ITicketRepository ticketRepository, 
     ITicketConfigurationRepository ticketConfigurationRepository, 
-    IRedisService redisService)
+    IRedisService redisService,
+    IPublishEndpoint publishEndpoint)
 {
     private const int CacheDurationMinutes = 60;
 
@@ -30,12 +34,48 @@ public class TicketsService(
         return await GetOrSetCache(cacheKey, () => ticketConfigurationRepository.GetConfigurationAsync(userType));
     }
 
-    public async Task<ResultOperation> BuyTicket(Ticket ticket)
+    public async Task<ResultOperation> BuyTickets(List<Ticket> tickets, string userName, Guid userId, string paymentType)
     {
-        if (string.IsNullOrWhiteSpace(ticket.UserName)) 
-            return ResultOperation.Fail("UserName cannot be empty.");
+        if (tickets.Count == 0)
+            return ResultOperation.Fail("Ticket list cannot be empty.");
         
-        return await ProcessTicketChange(() => ticketRepository.AddAsync(ticket), $"Tickets_Status_{ticket.UserType}");
+        if (!Enum.TryParse(paymentType, true, out PaymentTypes validPaymentType))
+            return ResultOperation.Fail("Invalid payment type. Allowed values: Cash, Card.");
+        
+        var failedTickets = new List<string>();
+        var purchasedTickets = new List<Ticket>();
+
+        foreach (var ticket in tickets)
+        {
+            if (string.IsNullOrWhiteSpace(ticket.UserName))
+            {
+                failedTickets.Add($"Ticket {ticket.Id}: UserName cannot be empty.");
+                continue;
+            }
+
+            ticket.PaymentType = validPaymentType.ToString();
+            
+            var result = await ticketRepository.AddAsync(ticket);
+            if (!result)
+            {
+                failedTickets.Add($"Ticket {ticket.Id}: Cannot buy ticket.");
+                continue;
+            }
+
+            purchasedTickets.Add(ticket);
+        }
+
+        if (purchasedTickets.Count > 0)
+        {
+            double totalAmount = purchasedTickets.Sum(t => t.Price);
+            var ticketDetails = purchasedTickets.Select(t => new CardDetailsModel(t.Id)).ToList();
+            var card = new CardInfoModel(userId, userName, totalAmount, ticketDetails, paymentType);
+            await publishEndpoint.Publish(card);
+        }
+
+        return failedTickets.Count > 0 
+            ? ResultOperation.Fail(string.Join("; ", failedTickets)) 
+            : ResultOperation.Ok();
     }
     
     public async Task<ResultOperation> DeleteTicket(int id)

@@ -9,6 +9,7 @@ using MegaMonster.Services.Auth.Infrastructure.MessageBroker;
 using MegaMonster.Services.Auth.Persistence.Data;
 using MegaMonster.Services.Auth.Persistence.DbInitializer;
 using MegaMonster.Services.Auth.Persistence.Repositories;
+using MessagingModels.UserInformation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -110,6 +111,7 @@ builder.Services.AddMassTransit(busConfiguration =>
             h.Password(settings.Password);
         });
     });
+    busConfiguration.AddRequestClient<UserRequest>();
 });
 
 

@@ -8,7 +8,7 @@ namespace MegaMonster.Services.Card.Application.Services;
 
 public class OrderService(IOrderRepository orderRepository, IRedisService redisService)
 {
-    public async Task<List<int>> GetOrdersIdByUserId(string userId)
+    public async Task<List<int>> GetOrdersIdByUserId(Guid userId)
     {
         var cacheKey = $"OrdersId_{userId}";
         var cachedOrders = await redisService.GetAsync<List<int>>(cacheKey);
@@ -24,7 +24,7 @@ public class OrderService(IOrderRepository orderRepository, IRedisService redisS
         return orders;
     }
 
-    public async Task<List<Order>> GetOrdersByUserId(string userId)
+    public async Task<List<Order>> GetOrdersByUserId(Guid userId)
     {
         return await orderRepository.GetOrdersUserId(userId);
     }

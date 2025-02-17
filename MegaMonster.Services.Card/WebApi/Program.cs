@@ -1,5 +1,6 @@
 using System.Text;
 using MassTransit;
+using MegaMonster.Services.Card.Application.Messaging;
 using MegaMonster.Services.Card.Application.Services;
 using MegaMonster.Services.Card.Core.Interfaces;
 using MegaMonster.Services.Card.Infrastructure.MessageBroker;
@@ -52,6 +53,7 @@ builder.Services.AddSingleton(sp =>
 
 builder.Services.AddMassTransit(busConfiguration =>
 {
+    busConfiguration.AddConsumer<CardConsumer>();
     busConfiguration.UsingRabbitMq((context, configurator) =>
     {
         MessageBrokerSettings settings = context.GetRequiredService<MessageBrokerSettings>();
@@ -60,6 +62,10 @@ builder.Services.AddMassTransit(busConfiguration =>
         {
             h.Username(settings.UserName);
             h.Password(settings.Password);
+        });
+        configurator.ReceiveEndpoint("card-service-queue", e =>
+        {
+            e.ConfigureConsumer<CardConsumer>(context);
         });
     });
 });

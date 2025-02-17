@@ -14,7 +14,7 @@ public class CardController(OrderService orderService, OrderDetailsService order
     // Get Requests //
     [Authorize]
     [HttpGet("card")]
-    public async Task<IActionResult> GetCard(string userId)
+    public async Task<IActionResult> GetCard(Guid userId)
     {
         var orderIds = await orderService.GetOrdersIdByUserId(userId);
         if (!orderIds.Any())
@@ -38,7 +38,7 @@ public class CardController(OrderService orderService, OrderDetailsService order
     public async Task<IActionResult> AddToCard([FromBody] OrderDto orderDto)
     {
         
-        if (string.IsNullOrEmpty(orderDto.UserId) || string.IsNullOrEmpty(orderDto.UserName))
+        if (string.IsNullOrEmpty(orderDto.UserId.ToString()) || string.IsNullOrEmpty(orderDto.UserName))
         {
             return BadRequest("UserId and UserName are required.");
         }
@@ -57,13 +57,12 @@ public class CardController(OrderService orderService, OrderDetailsService order
         {
             UserId = orderDto.UserId,
             UserName = orderDto.UserName,
-            Sum = orderDto.Sum
+            Sum = orderDto.Sum,
         };
 
         order.OrderDetails = orderDto.OrderDetails
             .Select(detailsDto => new OrderDetails
             {
-                Bill = detailsDto.Bill,
                 TicketId = detailsDto.TicketId,
                 Order = order
             })
@@ -75,6 +74,14 @@ public class CardController(OrderService orderService, OrderDetailsService order
             ? Ok(new { message = "Order successfully added" }) 
             : BadRequest(result.Message);
     }
+    
+    // Checkout
+    /*[Authorize]
+    [HttpPost("checkout")]
+    public async Task<IActionResult> Checkout([FromBody, Required] Guid userId)
+    {
+        
+    }*/
     
     // Put Requests //
     [Authorize]
@@ -94,14 +101,14 @@ public class CardController(OrderService orderService, OrderDetailsService order
         }
         
         order.Sum = orderEditDto.Sum;
+        order.Bill = orderEditDto.Bill;
 
         var orderDetails = order.OrderDetails.FirstOrDefault(od => od.Id == orderDetailsId);
         if (orderDetails == null)
         {
             return NotFound("OrderDetails with ID not found for this order.");
         }
-
-        orderDetails.Bill = orderEditDto.Bill;
+        
         orderDetails.TicketId = orderEditDto.TicketId;
         var result = await orderService.UpdateOrder(order);
         return result.Success ? Ok("Order updated") : BadRequest(result.Message);

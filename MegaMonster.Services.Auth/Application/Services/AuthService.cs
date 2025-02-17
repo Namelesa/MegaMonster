@@ -5,6 +5,7 @@ using MegaMonster.Services.Auth.Core.Interfaces;
 using MegaMonster.Services.Auth.Core.Models;
 using MegaMonster.Services.Auth.Infrastructure.JWT;
 using MessagingModels.UserAdding;
+using MessagingModels.UserInformation;
 
 namespace MegaMonster.Services.Auth.Application.Services;
 
@@ -13,7 +14,8 @@ public class AuthService(
     ILoginRepository loginRepository, 
     JwtService jwtService, 
     UserValidator userValidator,
-    IPublishEndpoint publishEndpoint)
+    IPublishEndpoint publishEndpoint,
+    IRequestClient<UserRequest> userRequestClient)
 {
     public async Task<OperationResult> RegisterUser(string password, string email, string userName, string login, string phoneNumber, string? role = null)
     {
@@ -63,9 +65,26 @@ public class AuthService(
         }
         
         user.PasswordHash = await registerRepository.HashPassword(password, user);
-        
-        var res = await jwtService.AuthenticateAsync(user, password, user.Role) is { Length: > 0 } token ? token : null;
-        return OperationResult.Ok(res);
+
+        try
+        {
+            var response = await userRequestClient.GetResponse<UserTicketModel>(new UserRequest(login));
+
+            if (string.IsNullOrEmpty(response.Message.UserId))
+            {
+                return OperationResult.Fail("User not found in UserService");
+            }
+
+            user.Id = response.Message.UserId;
+            
+            var res = await jwtService.AuthenticateAsync(user, password, user.Role) is { Length: > 0 } token ? token : null;
+            return OperationResult.Ok(res);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
     
     private async Task<OperationResult> ValidateInfo(Users user)

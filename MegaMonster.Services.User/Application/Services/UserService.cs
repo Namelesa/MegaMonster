@@ -18,6 +18,11 @@ public class UserService(IUserRepository userRepository,
     public async Task<IEnumerable<Users>> GetAllUsers() =>
         await GetOrSetCache(UsersCacheKey, userRepository.GetAllAsync!);
 
+    public async Task<Users?> FindByLoginAsync(string login)
+    {
+        return await userRepository.GetUserByLoginAsync(login);
+    }
+
     public async Task<OperationResult> AddUser(Users user) =>
         await HandleDatabaseOperation(async () =>
         {

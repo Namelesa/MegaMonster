@@ -11,7 +11,7 @@ public class UserRepository(AppDbContext db, ILogger<UserRepository> logger) : I
     {
         return await db.Users.ToListAsync();
     }
-
+    
     public async Task<bool> AddAsync(Users user)
     {
         try

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using MegaMonster.Services.Favors.Application.Services;
 using MegaMonster.Services.Favors.Core.Models;
 using MegaMonster.Services.Favors.WebApi.Dto_s;
@@ -35,18 +36,25 @@ public class TicketController(TicketsService ticketsService) : ControllerBase
     // Post Requests //
     [Authorize]
     [HttpPost("ticket/buy")]
-    public async Task<IActionResult> BuyTicket([Required] TicketDto ticketDto)
+    public async Task<IActionResult> BuyTicket([Required] List<TicketDto> ticketDtos, [Required]string paymentType)
     {
-        var config = await ticketsService.GetConfigurationForUser(ticketDto.UserType);
-            
-        var ticket = new Ticket(ticketDto.UserName, ticketDto.UserType, ticketDto.DateTimeStart, config, ticketDto.UserId)
-        { 
-            // add user info
-        };
+        var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    
+        if (userName == null || userId == null) 
+            return BadRequest("UserName can not be null");
 
-        var result = await ticketsService.BuyTicket(ticket);
-        return result.Success ? Ok($"Message = Ticket successfully purchased, TicketId = {ticket.Id }") : BadRequest(result.Message); 
-            
+        var tickets = new List<Ticket>();
+        foreach (var ticketDto in ticketDtos)
+        {
+            var config = await ticketsService.GetConfigurationForUser(ticketDto.UserType);
+            tickets.Add(new Ticket(userName, ticketDto.UserType, ticketDto.DateTimeStart, config, Guid.Parse(userId)));
+        }
+
+        var result = await ticketsService.BuyTickets(tickets, userName, Guid.Parse(userId), paymentType);
+        return result.Success 
+            ? Ok("Message = Tickets successfully purchased") 
+            : BadRequest(result.Message);
     }
     
     [Authorize(Roles = "Admin")]

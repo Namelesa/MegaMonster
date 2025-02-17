@@ -62,7 +62,8 @@ public class JwtService(IConfiguration config, ILogger<JwtService> logger)
         {
             Subject = new ClaimsIdentity(new[]
             {
-                new Claim(JwtRegisteredClaimNames.Name, user.Login),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.Role, role)
             }),
             Expires = tokenExpiry,

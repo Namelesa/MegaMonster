@@ -9,12 +9,13 @@ namespace MegaMonster.Services.Payment.Infrastructure.Service
 {
     public class PaymentService(string publicKey, string privateKey, AppDbContext db)
     {
-        private string CreatePayment(string orderId, string userName, string ticketType, decimal amount, int count, string action)
+        private string CreatePayment(string orderId, string userName, string ticketType, double amount, int count, string action)
         {
             var data = new Dictionary<string, string>
             {
                 {"version", PaymentSettings.ApiVersion.ToString()},
                 {"public_key", publicKey},
+                {"userName", userName },
                 {"action", action.ToLower() },
                 {"amount", amount.ToString()},
                 {"currency", "UAH"},
@@ -39,7 +40,7 @@ namespace MegaMonster.Services.Payment.Infrastructure.Service
             return Convert.ToBase64String(hash);
         }
 
-        public async Task<string> CreatePaymentAsync(string orderId, string userName, string ticketType, decimal amount, int count, string action)
+        public async Task<string> CreatePaymentAsync(string orderId, string userName, string ticketType, double amount, int count, string action)
         {
             if (count <= 0 || amount <= 0)
             {
