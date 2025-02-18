@@ -82,5 +82,4 @@ public class OrderRepository(AppDbContext db) : IOrderRepository
             .Include(o => o.OrderDetails)
             .FirstOrDefaultAsync(o => o.Id == orderId);
     }
-    
 }

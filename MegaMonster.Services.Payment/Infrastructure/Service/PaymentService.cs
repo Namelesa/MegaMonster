@@ -11,6 +11,9 @@ namespace MegaMonster.Services.Payment.Infrastructure.Service
     {
         private string CreatePayment(int orderId, string userName, double amount, int count, string action)
         {
+            var description = $"User name: {userName}, " +
+                              $"ticket count: {count}, " +
+                              $"Sum: {amount} UAH";
             var data = new Dictionary<string, string>
             {
                 {"version", PaymentSettings.ApiVersion.ToString()},
@@ -19,16 +22,15 @@ namespace MegaMonster.Services.Payment.Infrastructure.Service
                 {"action", action.ToLower() },
                 {"amount", amount.ToString()},
                 {"currency", "UAH"},
-                {"description", $"{count}"},
+                {"description", description},
                 {"order_id", orderId.ToString()},
-                {"result_url", ""}
+                {"result_url", "https://localhost:7215/api/payment/result"}
             };
 
             var json = JsonConvert.SerializeObject(data);
             var base64Data = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
 
             var signature = GenerateSignature(base64Data);
-            Console.WriteLine($"Отправленные данные: {JsonConvert.SerializeObject(data)}");
 
             return $"{PaymentSettings.LiqpayApiCheckoutUrl}?data={base64Data}&signature={signature}";
         }
@@ -65,54 +67,70 @@ namespace MegaMonster.Services.Payment.Infrastructure.Service
             return paymentUrl;
         }
         
-        public async Task<bool> HandlePaymentResultAsync(Dictionary<string, string> requestDictionary)
+        public async Task<(bool isSuccess, string orderId, string transactionId)> HandlePaymentResultAsync(Dictionary<string, string> requestDictionary)
         {
-            Console.WriteLine($"Request data: {requestDictionary}");
             if (requestDictionary.TryGetValue("data", out var base64Data) &&
                 requestDictionary.TryGetValue("signature", out var signature)) 
             {
                 var decodedData = Encoding.UTF8.GetString(Convert.FromBase64String(base64Data));
-                Console.WriteLine($"Decoded data: {decodedData}");
                 var requestData = JsonConvert.DeserializeObject<Dictionary<string, string>>(decodedData);
-                Console.WriteLine($"Request data: {requestData}");
-                Console.WriteLine($"Decoded request data: {JsonConvert.SerializeObject(requestData)}");
 
                 if (!requestData.TryGetValue("order_id", out var orderId))
                 {
-                    return false;
+                    Console.WriteLine("Order ID not found.");
+                    return (false, null, null); 
+                }
+
+                if (!requestData.TryGetValue("transaction_id", out var transactionId))
+                { 
+                    Console.WriteLine("Transaction ID not found.");
+                    return (false, orderId, null);
                 }
 
                 var payment = await GetPaymentAsync(orderId);
-                if (payment == null)
-                {
-                    return false; 
-                }
-                
+    
                 if (signature != GenerateSignature(base64Data))
                 {
-                    return false; 
+                    Console.WriteLine("Signature mismatch.");
+                    return (false, orderId, transactionId);
                 }
+    
+                if (requestData.TryGetValue("status", out var status))
+                { 
+                    if (status == "success")
+                    {
+                        payment.Status = PaymentSettings.IsSuccess;
+                    }
+                    else if (status == "failure" || status == "error")
+                    {
+                        payment.Status = PaymentSettings.IsCanceled;
+                    }
+                    else
+                    {
+                        payment.Status = PaymentSettings.IsUnknown;
+                    }
 
-                if (requestData.TryGetValue("status", out var status) && status == "success")
-                {
-                    payment.Status = PaymentSettings.IsSuccess;
+                    Console.WriteLine($"Payment status updated to: {payment.Status}");
+                    await SavePaymentAsync(payment);
+                    
+                    string successUrl = $"https://www.liqpay.ua/en/checkout/success/{transactionId}";
+                    return (true, orderId, successUrl);
                 }
                 else
                 {
-                    payment.Status = PaymentSettings.IsCanceled;
+                    Console.WriteLine("Status not found in response.");
+                    return (false, orderId, transactionId);  
                 }
-
-                await SavePaymentAsync(payment);
-                return true;
             }
 
-            return false; 
+            Console.WriteLine("Invalid request data.");
+            return (false, null, null); 
         }
         
         public async Task<bool> CancelPaymentAsync(int orderId)
         {
             var payment = await GetPaymentAsync(orderId.ToString());
-            if (payment == null || payment.Status != PaymentSettings.IsCreated)
+            if (payment.Status != PaymentSettings.IsCreated)
             {
                 return false;
             }
@@ -124,7 +142,8 @@ namespace MegaMonster.Services.Payment.Infrastructure.Service
         
         private async Task<Payments> GetPaymentAsync(string orderId)
         {
-            return await db.Payments.SingleOrDefaultAsync(p => p.OrderId.ToString() == orderId) ?? throw new InvalidOperationException();
+            return await db.Payments.SingleOrDefaultAsync(p => p.OrderId.ToString() == orderId) 
+                   ?? throw new InvalidOperationException("Payment not found.");
         }
 
         private async Task SavePaymentAsync(Payments payment)

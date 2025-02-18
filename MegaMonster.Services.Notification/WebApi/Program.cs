@@ -72,6 +72,7 @@ builder.Services.AddMassTransit(busConfiguration =>
 {
     busConfiguration.AddConsumer<NotifyUserConsumer>();
     busConfiguration.AddConsumer<UserBanConsumer>();
+    busConfiguration.AddConsumer<NotifyUserBillConsumer>();
     
     busConfiguration.UsingRabbitMq((context, configurator) =>
     {
@@ -90,6 +91,10 @@ builder.Services.AddMassTransit(busConfiguration =>
         configurator.ReceiveEndpoint("ban-user-queue", e =>
         {
             e.ConfigureConsumer<UserBanConsumer>(context);
+        });
+        configurator.ReceiveEndpoint("bill-user-queue", e =>
+        {
+            e.ConfigureConsumer<NotifyUserBillConsumer>(context);
         });
     });
 });

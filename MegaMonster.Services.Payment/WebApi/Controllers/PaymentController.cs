@@ -1,5 +1,7 @@
+using MassTransit;
 using MegaMonster.Services.Payment.Infrastructure.Service;
 using MegaMonster.Services.Payment.WebApi.Dto_s;
+using MessagingModels.InfoPayment;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -7,7 +9,7 @@ namespace MegaMonster.Services.Payment.WebApi.Controllers;
 
 [ApiController]
 [Route("api/payment")]
-public class PaymentController(PaymentService paymentService) : ControllerBase
+public class PaymentController(PaymentService paymentService, IPublishEndpoint publishEndpoint) : ControllerBase
 {
     [HttpPost("createPayment")]
     public async Task<IActionResult> CreatePayment([FromForm] PaymentRequestDto request)
@@ -41,15 +43,18 @@ public class PaymentController(PaymentService paymentService) : ControllerBase
     {
         try
         {
-            var requestDictionary = Request.Form.ToDictionary(key => key.Key, key => key.Value.ToString());
-            
-            Console.WriteLine($"Received request data: {JsonConvert.SerializeObject(requestDictionary)}");
+            var formData = Request.Form;
+            Console.WriteLine($"Form data received: {JsonConvert.SerializeObject(formData)}");
 
-            bool isSuccess = await paymentService.HandlePaymentResultAsync(requestDictionary);
+            var requestDictionary = formData.ToDictionary(key => key.Key, key => key.Value.ToString());
 
-            if (isSuccess)
+            var isSuccess = await paymentService.HandlePaymentResultAsync(requestDictionary);
+
+            if (isSuccess.isSuccess)
             {
-                return Redirect("https://www.youtube.com/");
+                var publishCardModel = new InfoForCardPayment(int.Parse(isSuccess.orderId), isSuccess.transactionId);
+                await publishEndpoint.Publish(publishCardModel);
+                return Redirect("https://localhost:7215/swagger/index.html");
             }
             else
             {

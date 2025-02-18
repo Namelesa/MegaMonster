@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Details & Bill</title>
+    <title>Order Invoice</title>
     <style>
         body {
             margin: 0;
@@ -31,17 +31,6 @@
             color: #ffffff;
             font-size: 26px;
             font-weight: bold;
-            position: relative;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -25px;
-            left: calc(50% - 50px);
-            width: 100px;
-            height: 100px;
-            background: url('https://via.placeholder.com/100?text=🎢') no-repeat center/contain;
         }
 
         .content {
@@ -55,10 +44,6 @@
             color: #333333;
             margin-bottom: 20px;
             text-align: left;
-        }
-
-        .customer-details p {
-            margin: 8px 0;
         }
 
         .bill-section {
@@ -93,44 +78,12 @@
             text-align: right;
         }
 
-        .receipt-link {
-            display: block;
-            width: 100%;
-            max-width: 220px;
-            margin: 20px auto;
-            padding: 15px 20px;
-            text-align: center;
-            background-color: #ff6f61;
-            color: #ffffff;
-            text-decoration: none;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 50px;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-        }
-
-        .receipt-link:hover {
-            background-color: #ff8a65;
-            transform: scale(1.05);
-        }
-
         .footer {
             background-color: #ffa726;
             padding: 15px;
             text-align: center;
             color: #ffffff;
             font-size: 14px;
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
-        }
-
-        .footer a {
-            color: #ffffff;
-            text-decoration: underline;
-        }
-
-        .footer a:hover {
-            text-decoration: none;
         }
     </style>
 </head>
@@ -138,51 +91,38 @@
 <body>
 <div class="email-wrapper">
     <div class="header">
-        User Details & Bill 🧾
+        Order Invoice 🧾
     </div>
     <div class="content">
-        <h1>User Information</h1>
+        <h1>Order Details</h1>
         <div class="customer-details">
-            <p><strong>Full Name: </strong> {name}</p>
-            <p><strong>Email: </strong> {email}</p>
-            <p><strong>Telegram:</strong> {telegram}</p>
+            <p><strong>Customer Name: </strong> {UserName}</p>
+            <p><strong>Order ID: </strong> {OrderId}</p>
+            <p><strong>Payment Type: </strong> {PaymentType}</p>
+            <p><strong>Status: </strong> {Status}</p>
         </div>
 
-        <h1>Your Attractions Bill</h1>
+        <h1>Bill Summary</h1>
         <div class="bill-section">
             <table>
                 <thead>
                 <tr>
-                    <th>Attraction</th>
-                    <th>Price</th>
+                    <th>Ticket ID</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <td>Roller Coaster</td>
-                    <td>$20</td>
-                </tr>
-                <tr>
-                    <td>Ferris Wheel</td>
-                    <td>$15</td>
-                </tr>
-                <tr>
-                    <td>Haunted House</td>
-                    <td>$25</td>
-                </tr>
+                {OrderDetailsRows}
                 </tbody>
                 <tfoot>
                 <tr>
-                    <td class="total" colspan="2">Total: $60</td>
+                    <td class="total" colspan="2">Total: ₴{Sum}</td>
                 </tr>
                 </tfoot>
             </table>
         </div>
-        <a href="{url}" class="receipt-link">View Receipt</a>
     </div>
     <div class="footer">
-        &copy; 2024 Mega Monster Pavers. All rights reserved. <br>
-        <a href="#">Privacy Policy</a> | <a href="#">Unsubscribe</a>
+        &copy; 2024 Mega Monster Pavers. All rights reserved.
     </div>
 </div>
 </body>

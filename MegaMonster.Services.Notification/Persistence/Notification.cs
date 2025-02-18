@@ -24,7 +24,7 @@ public class Notification(IEmailSender emailSender, ITemplateReader templateRead
         await emailSender.SendEmailAsync(userDto.Email, Wc.ConfirmEmail, htmlBody);
         return true;
     }
-    public async Task<bool> SendBillEmailAsync(UserDto userDto, string url)
+    public async Task<bool> SendBillEmailAsync(BillUserDto userDto)
     {
         var templatePath = "Infrastructure/Templates/Bill.html";
         var htmlBody = await templateReader.ReadTemplateAsync(templatePath);
@@ -34,9 +34,11 @@ public class Notification(IEmailSender emailSender, ITemplateReader templateRead
             return false;
         }
         
-        htmlBody = htmlBody.Replace("{name}", string.Join(" ", userDto.UserName))
-            .Replace("{email}", userDto.Email)
-            .Replace("{url}", url);
+        htmlBody = htmlBody.Replace("{UserName}", string.Join(" ", userDto.UserName))
+            .Replace("{OrderId}", userDto.OrderId.ToString())
+            .Replace("{PaymentType}", userDto.PaymentType)
+            .Replace("{Sum}", userDto.Sum.ToString())
+            .Replace("{Status}", userDto.Status);
 
         await emailSender.SendEmailAsync(userDto.Email, Wc.Information, htmlBody);
         return true;

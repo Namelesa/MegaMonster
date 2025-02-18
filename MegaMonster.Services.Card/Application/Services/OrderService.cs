@@ -78,6 +78,29 @@ public class OrderService(IOrderRepository orderRepository, IRedisService redisS
         return OperationResult.Fail("Cannot update this order");
     }
     
+    public async Task<OperationResult> UpdateOrderStatus(int orderId, string bill)
+    {
+        var order = await orderRepository.GetAllOrderInfo(orderId);
+    
+        if (order == null)
+        {
+            return OperationResult.Fail($"Order with ID {orderId} not found.");
+        }
+        
+        if (order.Status == Wc.PayedStatus)
+        {
+            return OperationResult.Ok();
+        }
+
+        order.Status = Wc.PayedStatus;
+        order.Bill = bill;
+        var result = await orderRepository.EditAsync(order);
+
+        return result 
+            ? OperationResult.Ok() 
+            : OperationResult.Fail($"Failed to update order {orderId}");
+    }
+    
     public async Task<OperationResult> CardCheckout(Guid userId)
     {
         var orders = await orderRepository.GetOrdersUserId(userId);
