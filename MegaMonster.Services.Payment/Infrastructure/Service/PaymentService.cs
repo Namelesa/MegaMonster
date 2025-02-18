@@ -9,7 +9,7 @@ namespace MegaMonster.Services.Payment.Infrastructure.Service
 {
     public class PaymentService(string publicKey, string privateKey, AppDbContext db)
     {
-        private string CreatePayment(string orderId, string userName, string ticketType, double amount, int count, string action)
+        private string CreatePayment(int orderId, string userName, double amount, int count, string action)
         {
             var data = new Dictionary<string, string>
             {
@@ -19,9 +19,9 @@ namespace MegaMonster.Services.Payment.Infrastructure.Service
                 {"action", action.ToLower() },
                 {"amount", amount.ToString()},
                 {"currency", "UAH"},
-                {"description", $"{ticketType} - {count}."},
-                {"order_id", orderId},
-                {"result_url", "https://www.youtube.com/"}
+                {"description", $"{count}"},
+                {"order_id", orderId.ToString()},
+                {"result_url", ""}
             };
 
             var json = JsonConvert.SerializeObject(data);
@@ -40,21 +40,20 @@ namespace MegaMonster.Services.Payment.Infrastructure.Service
             return Convert.ToBase64String(hash);
         }
 
-        public async Task<string> CreatePaymentAsync(string orderId, string userName, string ticketType, double amount, int count, string action)
+        public async Task<string> CreatePaymentAsync(int orderId, string userName, double amount, int count, string action)
         {
             if (count <= 0 || amount <= 0)
             {
-                throw new ArgumentException("Sum and count must be > 0.");
+                return "Count and sum must be > 0";
             }
             
-            var paymentUrl = CreatePayment(orderId, userName, ticketType, amount, count, action);
+            var paymentUrl = CreatePayment(orderId, userName, amount, count, action);
             
             var payment = new Payments
             {
                 OrderId = orderId,
                 Status = PaymentSettings.IsCreated,
                 UserName = userName,
-                TicketType = ticketType,
                 Count = count,
                 Sum = amount,
                 CreatedAt = DateTime.UtcNow

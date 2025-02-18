@@ -22,7 +22,6 @@ public class PaymentController(PaymentService paymentService) : ControllerBase
             var paymentUrl = await paymentService.CreatePaymentAsync(
                 request.OrderId,
                 request.UserName,
-                request.TicketType,
                 request.Sum,
                 request.Count,
                 request.Action

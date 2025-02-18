@@ -1,6 +1,7 @@
 using System.Text;
 using MassTransit;
 using MegaMonster.Services.Payment.Infrastructure.MessageBroker;
+using MegaMonster.Services.Payment.Infrastructure.Messaging;
 using MegaMonster.Services.Payment.Infrastructure.Service;
 using MegaMonster.Services.Payment.Persistence.Data;
 using MegaMonster.Services.Payment.Persistence.DbInitializer;
@@ -86,6 +87,7 @@ builder.Services.AddSingleton(sp =>
 
 builder.Services.AddMassTransit(busConfiguration =>
 {
+    busConfiguration.AddConsumer<PaymentConsumer>();
     busConfiguration.UsingRabbitMq((context, configurator) =>
     {
         MessageBrokerSettings settings = context.GetRequiredService<MessageBrokerSettings>();
@@ -94,6 +96,10 @@ builder.Services.AddMassTransit(busConfiguration =>
         {
             h.Username(settings.UserName);
             h.Password(settings.Password);
+        });
+        configurator.ReceiveEndpoint("payment-service-queue", e =>
+        {
+            e.ConfigureConsumer<PaymentConsumer>(context);
         });
     });
 });

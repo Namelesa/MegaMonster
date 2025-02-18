@@ -9,17 +9,14 @@ public class Payments
     public int Id { get; set; }
 
     [JsonProperty("order_id")]
-    public string OrderId { get; set; }
+    public int OrderId { get; set; }
 
     [JsonProperty("status")]
     public string Status { get; set; } = PaymentSettings.IsCreated;
 
     [JsonProperty("user_name")]
     public string UserName { get; set; }
-
-    [JsonProperty("ticket_type")]
-    public string TicketType { get; set; }
-
+    
     [JsonProperty("amount")]
     public double Sum { get; set; }
 

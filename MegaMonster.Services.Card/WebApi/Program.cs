@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,11 +40,11 @@ builder.Services.AddScoped<OrderDetailsService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
+builder.Services.AddControllers().AddNewtonsoftJson(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+        options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
     });
+
 
 builder.Services.Configure<MessageBrokerSettings>(
     builder.Configuration.GetSection("MessageBroker"));

@@ -38,10 +38,10 @@ public class TicketsService(
     {
         if (tickets.Count == 0)
             return ResultOperation.Fail("Ticket list cannot be empty.");
-        
+    
         if (!Enum.TryParse(paymentType, true, out PaymentTypes validPaymentType))
             return ResultOperation.Fail("Invalid payment type. Allowed values: Cash, Card.");
-        
+    
         var failedTickets = new List<string>();
         var purchasedTickets = new List<Ticket>();
 
@@ -53,8 +53,14 @@ public class TicketsService(
                 continue;
             }
 
+            if (!string.IsNullOrWhiteSpace(ticket.PaymentType) && !ticket.PaymentType.Equals(validPaymentType.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                failedTickets.Add($"Ticket {ticket.Id}: Payment type mismatch. Expected: {validPaymentType}");
+                continue;
+            }
+
             ticket.PaymentType = validPaymentType.ToString();
-            
+        
             var result = await ticketRepository.AddAsync(ticket);
             if (!result)
             {
@@ -69,7 +75,7 @@ public class TicketsService(
         {
             double totalAmount = purchasedTickets.Sum(t => t.Price);
             var ticketDetails = purchasedTickets.Select(t => new CardDetailsModel(t.Id)).ToList();
-            var card = new CardInfoModel(userId, userName, totalAmount, ticketDetails, paymentType);
+            var card = new CardInfoModel(userId, userName, totalAmount, ticketDetails, validPaymentType.ToString());
             await publishEndpoint.Publish(card);
         }
 

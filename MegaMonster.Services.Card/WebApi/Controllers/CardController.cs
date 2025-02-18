@@ -76,12 +76,13 @@ public class CardController(OrderService orderService, OrderDetailsService order
     }
     
     // Checkout
-    /*[Authorize]
+    [Authorize]
     [HttpPost("checkout")]
     public async Task<IActionResult> Checkout([FromBody, Required] Guid userId)
     {
-        
-    }*/
+        var result = await orderService.CardCheckout(userId);
+        return result.Success ? Ok("Push card to payment") : BadRequest("Can not publish card");
+    }
     
     // Put Requests //
     [Authorize]

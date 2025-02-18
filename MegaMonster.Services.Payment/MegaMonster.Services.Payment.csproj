@@ -31,4 +31,8 @@
       <Folder Include="Persistence\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\MessagingModels\MessagingModels.csproj" />
+    </ItemGroup>
+
 </Project>
