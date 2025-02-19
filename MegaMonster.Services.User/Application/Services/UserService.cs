@@ -4,6 +4,7 @@ using MegaMonster.Services.User.Application.Validation.UserValidator;
 using MegaMonster.Services.User.Core.Interfaces;
 using MegaMonster.Services.User.Core.Models;
 using MegaMonster.Services.User.Infrastructure.Redis;
+using MessagingModels.UserAdding;
 using MessagingModels.UserNotification;
 
 namespace MegaMonster.Services.User.Application.Services;
@@ -28,22 +29,39 @@ public class UserService(IUserRepository userRepository,
         return await userRepository.GetUserByIdAsync(userId);
     }
 
-    public async Task<OperationResult> AddUser(Users user) =>
+    public async Task<OperationResult> AddUser(Users user, string role) =>
         await HandleDatabaseOperation(async () =>
         {
             var validationResult = await ValidateUser(user);
             if (!validationResult.Success) return validationResult;
-
+            
             bool result = await userRepository.AddAsync(user);
             if (!result) return OperationResult.Fail("Failed to add user.");
-            
-            var notify = new UserNotificationBase(user.UserName, user.Email);
-            Console.WriteLine($"Publishing notification for {user.UserName}, ID: {Guid.NewGuid()}");
-            await publishEndpoint.Publish(notify);
+
+            if (role == Wc.CustomerRole)
+            {
+                var notify = new UserNotificationBase(user.UserName, user.Email);
+                Console.WriteLine($"Publishing notification for {user.UserName}, ID: {Guid.NewGuid()}");
+                await publishEndpoint.Publish(notify);
+            }
+            else
+            {
+                var addAdmin = new AddAdminModel
+                {
+                    Login = user.Login,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    Password = user.PasswordHash,
+                    PhoneNumber = user.PhoneNumber,
+                    Role = role
+                };
+                Console.WriteLine($"Publishing message fot adding Admin for {user.UserName}, ID: {Guid.NewGuid()}");
+                await publishEndpoint.Publish(addAdmin);
+            }
             
             return OperationResult.Ok();
         });
-
+    
     public async Task<OperationResult> EditUser(string login, string userName, string email, string phoneNumber, string newLogin) =>
         await HandleDatabaseOperation(async () =>
         {

@@ -39,7 +39,22 @@ public class UserController(UserService userService, RoleService roleService) : 
     [HttpPost("addUser")]
     public async Task<IActionResult> AddUser([FromBody, Required] UserDto userDto, [Required] string role)
     {
-        var result = await AddUserWithRole(userDto, role);
+        var currentRole = await roleService.FindRoleByNameAsync(role);
+        if (currentRole == null) return NotFound("Role not found.");
+        
+        Users user = new Users(userDto.Login)
+        {
+            UserName = userDto.UserName,
+            NormalizedUserName = userDto.UserName.ToUpper(),
+            NormalizedEmail = userDto.Email.ToUpper(),
+            Email = userDto.Email,
+            PhoneNumber = userDto.PhoneNumber,
+            Role = currentRole,
+            RoleId = currentRole.Id,
+            PasswordHash = userDto.PasswordHash
+        };
+        
+        var result = await userService.AddUser(user, role);
         return result.Success ? Ok("User added.") : BadRequest(new { error = result.Message });
     }
     
@@ -82,14 +97,8 @@ public class UserController(UserService userService, RoleService roleService) : 
     [HttpPost("createAdmin")]
     public async Task<IActionResult> AddUserAdmin([FromBody, Required] UserDto userDto, string role = "Admin")
     {
-        var result = await AddUserWithRole(userDto, role);
-        return result.Success ? Ok("New admin added") : BadRequest(new { error = result.Message });
-    }
-
-    private async Task<OperationResult> AddUserWithRole(UserDto userDto, string role)
-    {
         var currentRole = await roleService.FindRoleByNameAsync(role);
-        if (currentRole == null) return OperationResult.Fail("Role not found.");
+        if (currentRole == null) return NotFound("Role not found.");
         
         Users user = new Users(userDto.Login)
         {
@@ -102,7 +111,8 @@ public class UserController(UserService userService, RoleService roleService) : 
             RoleId = currentRole.Id,
             PasswordHash = userDto.PasswordHash
         };
-        await userService.AddUser(user);
-        return OperationResult.Ok();
+        
+        var result = await userService.AddUser(user, role);
+        return result.Success ? Ok("New admin added") : BadRequest(new { error = result.Message });
     }
 }

@@ -27,7 +27,7 @@ public class UserConsumer(UserService userService, RoleService roleService) : IC
             PasswordHash = user.Password
         };
         
-        await userService.AddUser(userToAdd);
+        await userService.AddUser(userToAdd, currentRole.RoleName);
         
         await Task.CompletedTask;
     }

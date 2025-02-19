@@ -1,5 +1,6 @@
 using System.Text;
 using MassTransit;
+using MegaMonster.Services.Auth.Application.Messaging;
 using MegaMonster.Services.Auth.Application.Services;
 using MegaMonster.Services.Auth.Application.Validation;
 using MegaMonster.Services.Auth.Core.Interfaces;
@@ -101,6 +102,8 @@ builder.Services.AddSingleton(sp =>
 
 builder.Services.AddMassTransit(busConfiguration =>
 {
+    busConfiguration.AddConsumer<AddAdminConsumer>();
+    
     busConfiguration.UsingRabbitMq((context, configurator) =>
     {
         MessageBrokerSettings settings = context.GetRequiredService<MessageBrokerSettings>();
@@ -109,6 +112,10 @@ builder.Services.AddMassTransit(busConfiguration =>
         {
             h.Username(settings.UserName);
             h.Password(settings.Password);
+        });
+        configurator.ReceiveEndpoint("add-new-admin-queue", e =>
+        {
+            e.ConfigureConsumer<AddAdminConsumer>(context);
         });
     });
     busConfiguration.AddRequestClient<UserRequest>();

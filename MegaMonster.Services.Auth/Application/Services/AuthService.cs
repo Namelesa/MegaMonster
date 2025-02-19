@@ -31,8 +31,7 @@ public class AuthService(
             NormalizedEmail = email.ToUpper(),
             NormalizedUserName = userName.ToUpper(),
         };
-        if (role == null) user.Role = Wc.CustomerRole;
-        user.Role = Wc.AdminRole;
+        
         user.PasswordHash = await registerRepository.HashPassword(password, user);
         
         var validationResult = await ValidateInfo(user);
@@ -41,13 +40,19 @@ public class AuthService(
             return validationResult;
         }
         
-        bool result = await registerRepository.RegisterUser(user);
-        if (!result) return OperationResult.Fail("Can not register user");
+        if (role == null)
+        {
+            user.Role = Wc.CustomerRole;
+            var userMessage = new UserModelMessage(user.Login, user.UserName, user.Email, user.PasswordHash, user.PhoneNumber, user.Role);
+            bool result = await registerRepository.RegisterUser(user);
+            await publishEndpoint.Publish(userMessage);
+            return result ? OperationResult.Ok("Add new Customer") : OperationResult.Fail("Can not register user"); 
+        }
         
-        var userMessage = new UserModelMessage(user.Login, user.UserName, user.Email, user.PasswordHash, user.PhoneNumber, user.Role);
-        await publishEndpoint.Publish(userMessage);
+        user.Role = Wc.AdminRole;
         
-        return OperationResult.Ok("");
+        bool resultAddAdmin = await registerRepository.RegisterUser(user);
+        return resultAddAdmin ? OperationResult.Ok("Add new Admin") : OperationResult.Fail("Can not register admin user"); 
     }
     
     public async Task<OperationResult> LoginUser(string password, string email, string login)
