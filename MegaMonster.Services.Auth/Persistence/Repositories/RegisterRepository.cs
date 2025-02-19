@@ -15,9 +15,19 @@ public class RegisterRepository(AppDbContext db, PasswordHasher<Users> passwordH
         return Task.FromResult(passwordHasher.HashPassword(user, password));
     }
 
+    public async Task<string> BanUser(string email)
+    {
+        var user = await db.Users.FirstOrDefaultAsync(u=> u.Email == email && !u.IsBan);
+        if (user == null) return "User not found";
+
+        user.IsBan = true;
+        await db.SaveChangesAsync();
+        return "Baned user";
+    }
+
     public async Task<bool> CheckLoginAndEmail(string login, string email)
     {
-        return await db.Users.AnyAsync(u => (u.Email == email && u.Login == login));
+        return await db.Users.AnyAsync(u => (u.Email == email && u.Login == login && u.IsBan == false));
     }
 
     public async Task<bool> RegisterUser(Users? user)

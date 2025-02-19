@@ -103,6 +103,7 @@ builder.Services.AddSingleton(sp =>
 builder.Services.AddMassTransit(busConfiguration =>
 {
     busConfiguration.AddConsumer<AddAdminConsumer>();
+    busConfiguration.AddConsumer<BanUserConsumer>();
     
     busConfiguration.UsingRabbitMq((context, configurator) =>
     {
@@ -116,6 +117,10 @@ builder.Services.AddMassTransit(busConfiguration =>
         configurator.ReceiveEndpoint("add-new-admin-queue", e =>
         {
             e.ConfigureConsumer<AddAdminConsumer>(context);
+        });
+        configurator.ReceiveEndpoint("ban-auth-user-queue", e =>
+        {
+            e.ConfigureConsumer<BanUserConsumer>(context);
         });
     });
     busConfiguration.AddRequestClient<UserRequest>();

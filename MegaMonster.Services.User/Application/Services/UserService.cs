@@ -88,8 +88,10 @@ public class UserService(IUserRepository userRepository,
             if (!result) return OperationResult.Fail("Failed to delete user.");
             
             var notify = new UserBan(user.Login, user.Email, reason);
+            var banAuth = new UserBanForAuth(user.Email);
             
             await publishEndpoint.Publish(notify);
+            await publishEndpoint.Publish(banAuth);
             
             return OperationResult.Ok();
         });

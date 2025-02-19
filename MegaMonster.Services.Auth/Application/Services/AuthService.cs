@@ -20,7 +20,9 @@ public class AuthService(
     public async Task<OperationResult> RegisterUser(string password, string email, string userName, string login, string phoneNumber, string? role = null)
     {
         var checkLoginAndEmail = await registerRepository.CheckLoginAndEmail(login, email);
-        if (checkLoginAndEmail) return OperationResult.Fail("User with the same email or login already exists.");
+        if (!checkLoginAndEmail) return OperationResult.Fail("User with the same email\n" +
+                                                            "or login already exists \n" +
+                                                            "or user is baned.");
         
         Users user = new Users()
         {
@@ -58,7 +60,8 @@ public class AuthService(
     public async Task<OperationResult> LoginUser(string password, string email, string login)
     {
         var checkLoginAndEmail = await registerRepository.CheckLoginAndEmail(login, email);
-        if (!checkLoginAndEmail) return OperationResult.Fail($"User with login '{login}' or with this email '{email}' not found");
+        if (!checkLoginAndEmail) return OperationResult.Fail($"User with login '{login}' or with this email '{email}' not found\n" +
+                                                             $"or user is baned");
         
         var user = await loginRepository.FindUser(login);
         if (user == null) return OperationResult.Fail("User not found");
@@ -90,6 +93,14 @@ public class AuthService(
             Console.WriteLine(e);
             throw;
         }
+    }
+
+    public async Task<OperationResult> BanUser(string email)
+    {
+        var result = await registerRepository.BanUser(email);
+        if (result == "User not found") return OperationResult.Fail(result);
+
+        return OperationResult.Ok(result);
     }
     
     private async Task<OperationResult> ValidateInfo(Users user)
