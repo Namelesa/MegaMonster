@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using MegaMonster.Services.Card.Application.Services;
+using MegaMonster.Services.Card.Core;
 using MegaMonster.Services.Card.Core.Models;
 using MegaMonster.Services.Card.WebApi.Dto_s;
 using Microsoft.AspNetCore.Authorization;
@@ -16,20 +17,30 @@ public class CardController(OrderService orderService, OrderDetailsService order
     [HttpGet("card")]
     public async Task<IActionResult> GetCard(Guid userId)
     {
-        var orderIds = await orderService.GetOrdersIdByUserId(userId);
-        if (!orderIds.Any())
+        var allOrders = await orderService.GetOrdersByUserId(userId);
+        var unpaidOrders = allOrders.Where(o => o.Status != Wc.PayedStatus).ToList();
+    
+        if (!unpaidOrders.Any())
         {
-            return NotFound("No orders found for this user.");
+            return NotFound("No unpaid orders found for this user.");
         }
 
+        var orderIds = unpaidOrders.Select(o => o.Id).ToList();
         var orderDetails = await orderDetailsService.GetOrderDetails(orderIds);
-        var orders = await orderService.GetOrdersByUserId(userId);
 
         return Ok(new ViewModel.Card
         {
-            OrderCard = orders,
+            OrderCard = unpaidOrders,
             OrderDetailsCard = orderDetails
         });
+    }
+    
+    [Authorize]
+    [HttpGet("history")]
+    public async Task<IActionResult> GetHistory(Guid userId)
+    {
+        var history = await orderService.GetOrderHistoryByUserId(userId);
+        return Ok(history);
     }
     
     // Post Requests //

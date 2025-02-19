@@ -61,4 +61,9 @@ public class UserRepository(AppDbContext db, ILogger<UserRepository> logger) : I
     {
         return await db.Users.FirstOrDefaultAsync(u => u.Login == login);
     }
+    
+    public async Task<Users?> GetUserByIdAsync(Guid userId)
+    {
+        return await db.Users.FirstOrDefaultAsync(u=> u.Id == userId.ToString());
+    }
 }

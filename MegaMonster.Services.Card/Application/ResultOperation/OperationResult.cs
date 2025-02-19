@@ -1,15 +1,17 @@
 namespace MegaMonster.Services.Card.Application.ResultOperation;
-public class OperationResult
+public class OperationResult<T>
 {
     public bool Success { get; }
     public string? Message { get; }
+    public T? Data { get; }
 
-    private OperationResult(bool success, string? message = null)
+    private OperationResult(bool success, T? data, string? message = null)
     {
         Success = success;
         Message = message;
+        Data = data;
     }
 
-    public static OperationResult Ok() => new(true);
-    public static OperationResult Fail(string message) => new(false, message);
+    public static OperationResult<T> Ok(T data) => new(true, data);
+    public static OperationResult<T> Fail(string message) => new(false, default, message);
 }

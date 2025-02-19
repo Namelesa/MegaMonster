@@ -37,6 +37,8 @@ public class Notification(IEmailSender emailSender, ITemplateReader templateRead
         htmlBody = htmlBody.Replace("{UserName}", string.Join(" ", userDto.UserName))
             .Replace("{OrderId}", userDto.OrderId.ToString())
             .Replace("{PaymentType}", userDto.PaymentType)
+            .Replace("{Email}", userDto.Email)
+            .Replace("{OrderDetailsRows}", string.Join("<br>", userDto.OrderDetailsRows))  
             .Replace("{Sum}", userDto.Sum.ToString())
             .Replace("{Status}", userDto.Status);
 

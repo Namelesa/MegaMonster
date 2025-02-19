@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using MassTransit;
 using MegaMonster.Services.Card.Application.Messaging;
 using MegaMonster.Services.Card.Application.Services;
@@ -40,6 +41,8 @@ builder.Services.AddScoped<OrderDetailsService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
     {
         options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
@@ -51,6 +54,12 @@ builder.Services.Configure<MessageBrokerSettings>(
 
 builder.Services.AddSingleton(sp =>
     sp.GetRequiredService<IOptions<MessageBrokerSettings>>().Value);
+
+builder.Services.Configure<JsonSerializerOptions>(options =>
+{
+    options.IncludeFields = true; 
+    options.PropertyNameCaseInsensitive = true;
+});
 
 builder.Services.AddMassTransit(busConfiguration =>
 {
@@ -127,6 +136,7 @@ using (var scope = app.Services.CreateScope())
     var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
     await dbInitializer.Initialize();
 }
+
 
 app.UseHttpsRedirection();
 app.MapControllers();

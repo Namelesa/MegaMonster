@@ -22,6 +22,11 @@ public class UserService(IUserRepository userRepository,
     {
         return await userRepository.GetUserByLoginAsync(login);
     }
+    
+    public async Task<Users?> FindByIdAsync(Guid userId)
+    {
+        return await userRepository.GetUserByIdAsync(userId);
+    }
 
     public async Task<OperationResult> AddUser(Users user) =>
         await HandleDatabaseOperation(async () =>

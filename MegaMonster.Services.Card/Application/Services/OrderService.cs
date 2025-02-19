@@ -5,10 +5,14 @@ using MegaMonster.Services.Card.Core.Interfaces;
 using MegaMonster.Services.Card.Core.Models;
 using MegaMonster.Services.Card.Infrastructure.Redis;
 using MessagingModels.InfoPayment;
+using MessagingModels.UserInformation.UserEmail;
 
 namespace MegaMonster.Services.Card.Application.Services;
 
-public class OrderService(IOrderRepository orderRepository, IRedisService redisService, IPublishEndpoint publishEndpoint)
+public class OrderService(IOrderRepository orderRepository, 
+    IRedisService redisService, 
+    IPublishEndpoint publishEndpoint,
+    IRequestClient<UserEmailRequest> userRequestClient)
 {
     public async Task<List<int>> GetOrdersIdByUserId(Guid userId)
     {
@@ -30,8 +34,15 @@ public class OrderService(IOrderRepository orderRepository, IRedisService redisS
     {
         return await orderRepository.GetOrdersUserId(userId);
     }
+    
+    public async Task<List<Order>> GetOrderHistoryByUserId(Guid userId)
+    {
+        var orders = await orderRepository.GetOrdersUserId(userId);
+        var history = orders.Where(u => u.Status == Wc.PayedStatus).ToList();
+        return history;
+    }
 
-    public async Task<OperationResult> DeleteById(int id)
+    public async Task<OperationResult<string>> DeleteById(int id)
     {
         var order = await orderRepository.GetOrder(id);
         if (order != null)
@@ -41,12 +52,12 @@ public class OrderService(IOrderRepository orderRepository, IRedisService redisS
             var cacheKey = $"Orders_{order.UserId}";
             await redisService.RemoveAsync(cacheKey);
 
-            return OperationResult.Ok();
+            return OperationResult<string>.Ok("Deleted order!");
         }
-        return OperationResult.Fail("Not found order with this id");
+        return OperationResult<string>.Fail("Not found order with this id");
     }
 
-    public async Task<OperationResult> AddOrder(Order order)
+    public async Task<OperationResult<string>> AddOrder(Order order)
     {
         var result = await orderRepository.AddAsync(order);
         if (result)
@@ -54,9 +65,9 @@ public class OrderService(IOrderRepository orderRepository, IRedisService redisS
             var cacheKey = $"Orders_{order.UserId}";
             await redisService.RemoveAsync(cacheKey);
 
-            return OperationResult.Ok();
+            return OperationResult<string>.Ok("Add successful");
         }
-        return OperationResult.Fail("Error with adding order");
+        return OperationResult<string>.Fail("Error with adding order");
     }
     
     public async Task<Order?> GetAllOrder(int orderId)
@@ -65,7 +76,7 @@ public class OrderService(IOrderRepository orderRepository, IRedisService redisS
         return order;
     }
     
-    public async Task<OperationResult> UpdateOrder(Order order)
+    public async Task<OperationResult<string>> UpdateOrder(Order order)
     {
         var result = await orderRepository.EditAsync(order);
         if (result)
@@ -73,35 +84,44 @@ public class OrderService(IOrderRepository orderRepository, IRedisService redisS
             var cacheKey = $"Orders_{order.UserId}";
             await redisService.RemoveAsync(cacheKey);
 
-            return OperationResult.Ok();
+            return OperationResult<string>.Ok("Successful updated");
         }
-        return OperationResult.Fail("Cannot update this order");
+        return OperationResult<string>.Fail("Cannot update this order");
     }
     
-    public async Task<OperationResult> UpdateOrderStatus(int orderId, string bill)
+    public async Task<OperationResult<Order>> UpdateOrderStatus(int orderId, string bill)
     {
         var order = await orderRepository.GetAllOrderInfo(orderId);
     
         if (order == null)
         {
-            return OperationResult.Fail($"Order with ID {orderId} not found.");
+            return OperationResult<Order>.Fail($"Order with ID {orderId} not found.");
         }
         
         if (order.Status == Wc.PayedStatus)
         {
-            return OperationResult.Ok();
+            return OperationResult<Order>.Ok(order);
         }
 
         order.Status = Wc.PayedStatus;
         order.Bill = bill;
         var result = await orderRepository.EditAsync(order);
 
-        return result 
-            ? OperationResult.Ok() 
-            : OperationResult.Fail($"Failed to update order {orderId}");
+        if (!result) return OperationResult<Order>.Fail($"Failed to update order {orderId}");
+        
+        var response = await userRequestClient.GetResponse<UserEmailResponse>(new UserEmailRequest{Id = order.UserId});
+
+        var ticketsId = await orderRepository.GetOrdersIdByUserId(order.UserId); 
+        
+        var notifyUserBill = new InfoBillModel(order.UserName, order.PaymentType, order.Status, order.Sum, orderId, response.Message.Email)
+        {
+            TicketsIds = ticketsId
+        };
+        await publishEndpoint.Publish(notifyUserBill);
+        return OperationResult<Order>.Ok(order);
     }
     
-    public async Task<OperationResult> CardCheckout(Guid userId)
+    public async Task<OperationResult<string>> CardCheckout(Guid userId)
     {
         var orders = await orderRepository.GetOrdersUserId(userId);
         
@@ -128,6 +148,6 @@ public class OrderService(IOrderRepository orderRepository, IRedisService redisS
             Payments = paymentInfoList
         };
         await publishEndpoint.Publish(paymentInfo);
-        return OperationResult.Ok();
+        return OperationResult<string>.Ok("");
     }
 }

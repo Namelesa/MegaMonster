@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using MassTransit;
 using MegaMonster.Services.User.Application.Messaging.Consumer;
 using MegaMonster.Services.User.Application.Services;
@@ -24,6 +25,12 @@ builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
     options.InstanceName = "UserService";
+});
+
+builder.Services.Configure<JsonSerializerOptions>(options =>
+{
+    options.IncludeFields = true;
+    options.PropertyNameCaseInsensitive = true;
 });
 
 builder.Services.AddAuthentication(options =>
@@ -89,6 +96,7 @@ builder.Services.AddMassTransit(busConfiguration =>
 {
     busConfiguration.AddConsumer<UserConsumer>();
     busConfiguration.AddConsumer<UserInfoConsumer>();
+    busConfiguration.AddConsumer<UserEmailConsumer>();
     
     busConfiguration.UsingRabbitMq((context, configurator) =>
     {
@@ -107,6 +115,10 @@ builder.Services.AddMassTransit(busConfiguration =>
         configurator.ReceiveEndpoint("user-get-login-queue", e =>
         {
             e.ConfigureConsumer<UserInfoConsumer>(context);
+        });
+        configurator.ReceiveEndpoint("user-get-email-queue", e =>
+        {
+            e.ConfigureConsumer<UserEmailConsumer>(context);
         });
     });
 });
