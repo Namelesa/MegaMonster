@@ -24,7 +24,7 @@ public class RegisterRepository(AppDbContext db, PasswordHasher<Users> passwordH
         await db.SaveChangesAsync();
         return "Baned user";
     }
-
+    
     public async Task<bool> CheckLoginAndEmail(string login, string email)
     {
         return await db.Users.AnyAsync(u => (u.Email == email && u.Login == login && u.IsBan == false));

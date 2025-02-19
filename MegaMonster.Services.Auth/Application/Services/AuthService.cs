@@ -20,9 +20,11 @@ public class AuthService(
     public async Task<OperationResult> RegisterUser(string password, string email, string userName, string login, string phoneNumber, string? role = null)
     {
         var checkLoginAndEmail = await registerRepository.CheckLoginAndEmail(login, email);
-        if (!checkLoginAndEmail) return OperationResult.Fail("User with the same email\n" +
-                                                            "or login already exists \n" +
-                                                            "or user is baned.");
+        if (checkLoginAndEmail) return OperationResult.Fail("User with the same email\n" +
+                                                            "or login already exists");
+        
+        var checkUser = await loginRepository.FindUser(login);
+        if (checkUser != null && checkUser.IsBan) return OperationResult.Fail("user is baned");
         
         Users user = new Users()
         {
