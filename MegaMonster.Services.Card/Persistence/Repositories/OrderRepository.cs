@@ -62,6 +62,15 @@ public class OrderRepository(AppDbContext db) : IOrderRepository
         var orders = await db.Orders.Where(t => t.UserId == userId).ToListAsync();
         return orders.Select(o => o.Id).ToList();
     }
+    
+    public async Task<List<int>> GetTicketsIdByUserId(Guid userId)
+    {
+        return await db.Orders
+            .Where(o => o.UserId == userId)
+            .SelectMany(o => o.OrderDetails)
+            .Select(od => od.TicketId)    
+            .ToListAsync();
+    }
 
     public async Task<List<Order>> GetOrdersUserId(Guid userId)
     {

@@ -21,6 +21,11 @@ public class TicketsService(
         var cacheKey = $"Tickets_Status_{status}";
         return await GetOrSetCache(cacheKey, () => ticketRepository.GetTicketByStatus(status));
     }
+    
+    public async Task<Ticket> GetTicketById(int id)
+    {
+        return await ticketRepository.GetTicketById(id);
+    }
 
     public async Task<IEnumerable<TicketConfiguration>> GetAllTicketConfigurations()
     {

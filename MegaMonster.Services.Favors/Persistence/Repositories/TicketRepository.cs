@@ -67,7 +67,7 @@ public class TicketRepository(AppDbContext db) : ITicketRepository
     
     public async Task<Ticket> GetTicketById(int id)
     {
-        var ticket = await db.Tickets.FirstOrDefaultAsync(u => u.Id == id);
+        var ticket = await db.Tickets.FindAsync(id);
         if (ticket == null)
         {
             throw new ArgumentException($"Ticket with id = {id} not found");

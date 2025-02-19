@@ -32,6 +32,10 @@ public class TicketController(TicketsService ticketsService) : ControllerBase
         var configurations = await ticketsService.GetAllTicketConfigurations();
         return Ok(configurations);
     }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("tickets/getTicketById/{id}")]
+    public async Task<IActionResult> GetTicketById(int id) => Ok(await ticketsService.GetTicketById(id));
     
     // Post Requests //
     [Authorize]

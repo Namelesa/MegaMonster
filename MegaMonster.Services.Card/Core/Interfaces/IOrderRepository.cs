@@ -8,4 +8,5 @@ public interface IOrderRepository : IRepository<Order>
     public Task<List<Order>> GetOrdersUserId(Guid userId);
     public Task<Order?> GetOrder(int id);
     public Task<Order?> GetAllOrderInfo(int orderId);
+    Task<List<int>> GetTicketsIdByUserId(Guid userId);
 }

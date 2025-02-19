@@ -111,7 +111,7 @@ public class OrderService(IOrderRepository orderRepository,
         
         var response = await userRequestClient.GetResponse<UserEmailResponse>(new UserEmailRequest{Id = order.UserId});
 
-        var ticketsId = await orderRepository.GetOrdersIdByUserId(order.UserId); 
+        var ticketsId = await orderRepository.GetTicketsIdByUserId(order.UserId); 
         
         var notifyUserBill = new InfoBillModel(order.UserName, order.PaymentType, order.Status, order.Sum, orderId, response.Message.Email)
         {
