@@ -4,7 +4,7 @@ using MegaMonster.Services.Favors.Core.Enums;
 using MegaMonster.Services.Favors.Core.Interfaces;
 using MegaMonster.Services.Favors.Core.Models;
 using MegaMonster.Services.Favors.Infrastructure.Redis;
-using MessagingModels.InfoCard;
+using MegaMonster.MessagingModels.InfoCard;
 
 namespace MegaMonster.Services.Favors.Application.Services;
 

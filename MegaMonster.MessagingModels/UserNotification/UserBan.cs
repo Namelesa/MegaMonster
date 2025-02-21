@@ -1,4 +1,4 @@
-namespace MessagingModels.UserNotification;
+namespace MegaMonster.MessagingModels.UserNotification;
 
 public class UserBan(string userName, string email, string reason) : BaseNotificationMessage(userName, email)
 { 

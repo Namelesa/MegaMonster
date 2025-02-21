@@ -1,7 +1,7 @@
 using MassTransit;
 using MegaMonster.Services.Payment.Infrastructure.Service;
 using MegaMonster.Services.Payment.WebApi.Dto_s;
-using MessagingModels.InfoPayment;
+using MegaMonster.MessagingModels.InfoPayment;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 

@@ -1,7 +1,7 @@
 using MassTransit;
 using MegaMonster.Services.Notification.Core.Interfaces;
 using MegaMonster.Services.Notification.Core.Models;
-using MessagingModels.UserNotification;
+using MegaMonster.MessagingModels.UserNotification;
 
 namespace MegaMonster.Services.Notification.Application.Messaging;
 

@@ -4,8 +4,8 @@ using MegaMonster.Services.Auth.Application.Validation;
 using MegaMonster.Services.Auth.Core.Interfaces;
 using MegaMonster.Services.Auth.Core.Models;
 using MegaMonster.Services.Auth.Infrastructure.JWT;
-using MessagingModels.UserAdding;
-using MessagingModels.UserInformation;
+using MegaMonster.MessagingModels.UserAdding;
+using MegaMonster.MessagingModels.UserInformation;
 
 namespace MegaMonster.Services.Auth.Application.Services;
 

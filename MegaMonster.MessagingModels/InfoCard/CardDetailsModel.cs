@@ -1,4 +1,4 @@
-namespace MessagingModels.InfoCard;
+namespace MegaMonster.MessagingModels.InfoCard;
 
 public class CardDetailsModel(int ticketId)
 {

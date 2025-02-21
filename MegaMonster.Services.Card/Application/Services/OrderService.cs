@@ -4,8 +4,8 @@ using MegaMonster.Services.Card.Core;
 using MegaMonster.Services.Card.Core.Interfaces;
 using MegaMonster.Services.Card.Core.Models;
 using MegaMonster.Services.Card.Infrastructure.Redis;
-using MessagingModels.InfoPayment;
-using MessagingModels.UserInformation.UserEmail;
+using MegaMonster.MessagingModels.InfoPayment;
+using MegaMonster.MessagingModels.UserInformation.UserEmail;
 
 namespace MegaMonster.Services.Card.Application.Services;
 

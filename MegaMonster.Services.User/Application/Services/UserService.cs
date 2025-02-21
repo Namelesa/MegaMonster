@@ -4,8 +4,8 @@ using MegaMonster.Services.User.Application.Validation.UserValidator;
 using MegaMonster.Services.User.Core.Interfaces;
 using MegaMonster.Services.User.Core.Models;
 using MegaMonster.Services.User.Infrastructure.Redis;
-using MessagingModels.UserAdding;
-using MessagingModels.UserNotification;
+using MegaMonster.MessagingModels.UserAdding;
+using MegaMonster.MessagingModels.UserNotification;
 
 namespace MegaMonster.Services.User.Application.Services;
 

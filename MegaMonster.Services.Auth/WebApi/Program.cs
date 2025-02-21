@@ -10,7 +10,7 @@ using MegaMonster.Services.Auth.Infrastructure.MessageBroker;
 using MegaMonster.Services.Auth.Persistence.Data;
 using MegaMonster.Services.Auth.Persistence.DbInitializer;
 using MegaMonster.Services.Auth.Persistence.Repositories;
-using MessagingModels.UserInformation;
+using MegaMonster.MessagingModels.UserInformation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

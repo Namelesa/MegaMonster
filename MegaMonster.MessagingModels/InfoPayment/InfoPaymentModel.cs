@@ -1,4 +1,4 @@
-namespace MessagingModels.InfoPayment;
+namespace MegaMonster.MessagingModels.InfoPayment;
 
 public class InfoPaymentModel(int orderId, int count, string userName, double sum)
 {

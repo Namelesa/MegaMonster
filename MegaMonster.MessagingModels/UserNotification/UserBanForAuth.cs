@@ -1,4 +1,4 @@
-namespace MessagingModels.UserNotification;
+namespace MegaMonster.MessagingModels.UserNotification;
 
 public class UserBanForAuth(string email)
 {

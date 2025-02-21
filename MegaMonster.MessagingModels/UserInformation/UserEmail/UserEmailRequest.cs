@@ -1,4 +1,4 @@
-namespace MessagingModels.UserInformation.UserEmail;
+namespace MegaMonster.MessagingModels.UserInformation.UserEmail;
 
 public class UserEmailRequest()
 {

@@ -32,7 +32,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\MessagingModels\MessagingModels.csproj" />
+      <ProjectReference Include="..\MegaMonster.MessagingModels\MegaMonster.MessagingModels.csproj" />
     </ItemGroup>
 
 </Project>

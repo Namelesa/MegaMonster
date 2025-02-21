@@ -1,4 +1,4 @@
-namespace MessagingModels.InfoPayment;
+namespace MegaMonster.MessagingModels.InfoPayment;
 
 public class InfoPaymentList
 {

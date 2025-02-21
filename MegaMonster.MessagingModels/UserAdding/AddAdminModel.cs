@@ -1,4 +1,4 @@
-namespace MessagingModels.UserAdding;
+namespace MegaMonster.MessagingModels.UserAdding;
 
 public class AddAdminModel
 {

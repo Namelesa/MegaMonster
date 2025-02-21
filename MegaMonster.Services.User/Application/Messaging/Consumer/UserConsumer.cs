@@ -1,7 +1,7 @@
 using MassTransit;
 using MegaMonster.Services.User.Application.Services;
 using MegaMonster.Services.User.Core.Models;
-using MessagingModels.UserAdding;
+using MegaMonster.MessagingModels.UserAdding;
 
 namespace MegaMonster.Services.User.Application.Messaging.Consumer;
 

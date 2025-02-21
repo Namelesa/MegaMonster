@@ -1,4 +1,4 @@
-namespace MessagingModels.Wc;
+namespace MegaMonster.MessagingModels.Wc;
 
 public class Wc
 {

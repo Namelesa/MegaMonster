@@ -1,4 +1,4 @@
-namespace MessagingModels.InfoCard;
+namespace MegaMonster.MessagingModels.InfoCard;
 
 public class CardInfoModel(Guid userId, string userName, double sum, List<CardDetailsModel> ticketDetails, string paymentType)
 {

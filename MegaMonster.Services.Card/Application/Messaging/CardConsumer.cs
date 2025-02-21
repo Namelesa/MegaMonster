@@ -1,7 +1,7 @@
 using MassTransit;
 using MegaMonster.Services.Card.Application.Services;
 using MegaMonster.Services.Card.Core.Models;
-using MessagingModels.InfoCard;
+using MegaMonster.MessagingModels.InfoCard;
 
 namespace MegaMonster.Services.Card.Application.Messaging;
 

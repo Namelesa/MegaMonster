@@ -1,4 +1,4 @@
-namespace MessagingModels.UserInformation;
+namespace MegaMonster.MessagingModels.UserInformation;
 
 public class UserRequest(string login)
 {
