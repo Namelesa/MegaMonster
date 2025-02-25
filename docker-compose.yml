@@ -1,0 +1,247 @@
+﻿services:
+  postgres:
+    image: postgres:latest
+    container_name: auth_db
+    restart: always
+    environment:
+      POSTGRES_DB: auth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5132:5432"
+    networks:
+      - app_network
+  
+  postgres1:
+    image: postgres:latest
+    container_name: card_db
+    restart: always
+    environment:
+      POSTGRES_DB: cart
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5131:5432"
+    networks:
+      - app_network
+  
+  postgres2:
+    image: postgres:latest
+    container_name: favors_db
+    restart: always
+    environment:
+      POSTGRES_DB: favors
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5130:5432"
+    networks:
+      - app_network
+  
+  postgres3:
+    image: postgres:latest
+    container_name: payment_db
+    restart: always
+    environment:
+      POSTGRES_DB: payment
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5134:5432"
+    networks:
+      - app_network
+  
+  postgres4:
+    image: postgres:latest
+    container_name: user_db
+    restart: always
+    environment:
+      POSTGRES_DB: user
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5133:5432"
+    networks:
+      - app_network
+  
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - app_network
+  
+  redis:
+    image: redis:latest
+    container_name: redisUser
+    restart: always
+    ports:
+      - "6374:6379"
+  
+  redis1:
+    image: redis:latest
+    container_name: redisFavors
+    restart: always
+    ports:
+      - "6372:6379"
+  
+  redis2:
+    image: redis:latest
+    container_name: redisCard
+    restart: always
+    ports:
+      - "6371:6379"
+  
+  megamonster.services.auth:
+    image: megamonster.services.auth
+    build:
+      context: .
+      dockerfile: MegaMonster.Services.Auth/Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:8081
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=BlahBlah
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/certs/app-certificate.pfx
+    volumes:
+      - /Users/maksimbilyk/RiderProjects/MegaMonster/MegaMonster.Services.Auth/config/app-certificate.pfx:/certs/app-certificate.pfx:ro
+    networks:
+      - app_network
+
+  megamonster.services.card:
+    image: megamonster.services.card
+    build:
+      context: .
+      dockerfile: MegaMonster.Services.Card/Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:8087
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=BlahBlah
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/certs/app-certificate.pfx
+    volumes:
+      - /Users/maksimbilyk/RiderProjects/MegaMonster/MegaMonster.Services.Card/config/app-certificate.pfx:/certs/app-certificate.pfx:ro
+    networks:
+      - app_network
+  
+  megamonster.services.favors:
+    image: megamonster.services.favors
+    build:
+      context: .
+      dockerfile: MegaMonster.Services.Favors/Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:8089
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=BlahBlah
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/certs/app-certificate.pfx
+    volumes:
+      - /Users/maksimbilyk/RiderProjects/MegaMonster/MegaMonster.Services.Favors/config/app-certificate.pfx:/certs/app-certificate.pfx:ro
+    networks:
+      - app_network
+
+  megamonster.services.notification:
+    image: megamonster.services.notification
+    build:
+      context: .
+      dockerfile: MegaMonster.Services.Notification/Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:8085
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=BlahBlah
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/certs/app-certificate.pfx
+    volumes:
+      - /Users/maksimbilyk/RiderProjects/MegaMonster/MegaMonster.Services.Notification/config/app-certificate.pfx:/certs/app-certificate.pfx:ro
+    networks:
+      - app_network
+
+  megamonster.services.payment:
+    image: megamonster.services.payment
+    build:
+      context: .
+      dockerfile: MegaMonster.Services.Payment/Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:8091
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=BlahBlah
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/certs/app-certificate.pfx
+    volumes:
+      - /Users/maksimbilyk/RiderProjects/MegaMonster/MegaMonster.Services.Payment/config/app-certificate.pfx:/certs/app-certificate.pfx:ro
+    networks:
+      - app_network
+
+  megamonster.services.user:
+    image: megamonster.services.user
+    build:
+      context: .
+      dockerfile: MegaMonster.Services.User/Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:8083
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=BlahBlah
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/certs/app-certificate.pfx
+    volumes:
+      - /Users/maksimbilyk/RiderProjects/MegaMonster/MegaMonster.Services.User/config/app-certificate.pfx:/certs/app-certificate.pfx:ro
+    networks:
+      - app_network
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /Users/maksimbilyk/RiderProjects/MegaMonster/Nginx/certs:/etc/nginx/certs:ro
+      - /Users/maksimbilyk/RiderProjects/MegaMonster/Nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - megamonster.services.auth
+      - megamonster.services.card
+      - megamonster.services.favors
+      - megamonster.services.notification
+      - megamonster.services.payment
+      - megamonster.services.user
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
