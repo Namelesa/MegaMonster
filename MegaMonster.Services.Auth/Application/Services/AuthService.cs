@@ -68,6 +68,8 @@ public class AuthService(
         var user = await loginRepository.FindUser(login);
         if (user == null) return OperationResult.Fail("User not found");
         
+        if(!user.EmailConfirmed) return OperationResult.Fail("Please confirm email");
+        
         var validationResult = await ValidateInfo(user);
         if (!validationResult.Success)
         {
@@ -97,13 +99,32 @@ public class AuthService(
         }
     }
 
-    public async Task<OperationResult> BanUser(string email)
+    public async Task BanUser(string email)
     {
         var result = await registerRepository.BanUser(email);
-        if (result == "User not found") return OperationResult.Fail(result);
-
-        return OperationResult.Ok(result);
+        if (result == "User not found")
+        {
+            OperationResult.Fail(result);
+            return;
+        }
+        OperationResult.Ok(result);
     }
+    
+    public async Task<OperationResult> ConfirmEmail(string email)
+    {
+        var user = await registerRepository.FindUserByEmail(email);
+        if (user == null) return OperationResult.Fail("User not found");
+
+        var result = await registerRepository.ConfirmEmailAsync(user);
+        
+        if (result)
+        {
+            await publishEndpoint.Publish(new ConfirmEmailUser(user.Login));
+            return OperationResult.Ok("Email confirmed successfully");
+        }
+        return OperationResult.Fail("Invalid or expired token");
+    }
+
     
     private async Task<OperationResult> ValidateInfo(Users user)
     {

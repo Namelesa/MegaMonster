@@ -40,7 +40,8 @@ public class UserService(IUserRepository userRepository,
 
             if (role == Wc.CustomerRole)
             {
-                var notify = new UserNotificationBase(user.UserName, user.Email);
+                var confirmationLink = $"https://localhost/auth/confirm-email?email={user.Email}";
+                var notify = new UserNotificationBase(user.UserName, user.Email, confirmationLink);
                 Console.WriteLine($"Publishing notification for {user.UserName}, ID: {Guid.NewGuid()}");
                 await publishEndpoint.Publish(notify);
             }
@@ -96,6 +97,17 @@ public class UserService(IUserRepository userRepository,
             return OperationResult.Ok();
         });
 
+    public async Task<OperationResult> ConfirmEmail(string login)
+    {
+        var user = await userRepository.GetUserByLoginAsync(login);
+        if (user == null)
+        {
+            return OperationResult.Fail("User not found");
+        }
+        var result = await userRepository.ConfirmEmailAsync(user);
+        return result ? OperationResult.Ok() : OperationResult.Fail("Can not confirm email");
+    }
+    
     private async Task<OperationResult> ValidateUser(Users user)
     {
         var validationResult = await validation.ValidateAsync(user);

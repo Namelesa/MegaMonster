@@ -19,8 +19,9 @@ public class Notification(IEmailSender emailSender, ITemplateReader templateRead
         }
 
         htmlBody = htmlBody.Replace("{name}", string.Join(" ", userDto.UserName))
-            .Replace("{email}", userDto.Email);
-
+            .Replace("{email}", userDto.Email)
+            .Replace("{link}", userDto.ConfirmLink);
+        Console.WriteLine(userDto.ConfirmLink);
         await emailSender.SendEmailAsync(userDto.Email, Wc.ConfirmEmail, htmlBody);
         return true;
     }

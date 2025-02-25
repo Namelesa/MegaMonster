@@ -48,4 +48,15 @@ public class AuthController(AuthService authService) : ControllerBase
         });
         return Ok(new { message = "Login successful" });
     }
+    
+    [HttpGet("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail(string email)
+    {
+        var result = await authService.ConfirmEmail(email);
+        if (result.Success)
+            return Ok("Email confirmed");
+
+        return BadRequest(result.Message);
+    }
+
 }

@@ -97,6 +97,7 @@ builder.Services.AddMassTransit(busConfiguration =>
     busConfiguration.AddConsumer<UserConsumer>();
     busConfiguration.AddConsumer<UserInfoConsumer>();
     busConfiguration.AddConsumer<UserEmailConsumer>();
+    busConfiguration.AddConsumer<UserConfirmConsumer>();
     
     busConfiguration.UsingRabbitMq((context, configurator) =>
     {
@@ -120,9 +121,12 @@ builder.Services.AddMassTransit(busConfiguration =>
         {
             e.ConfigureConsumer<UserEmailConsumer>(context);
         });
+        configurator.ReceiveEndpoint("user-confirm-email-queue", e =>
+        {
+            e.ConfigureConsumer<UserConfirmConsumer>(context);
+        });
     });
 });
-
 
 var app = builder.Build();
 

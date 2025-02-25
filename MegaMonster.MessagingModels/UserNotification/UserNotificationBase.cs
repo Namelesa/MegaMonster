@@ -1,6 +1,6 @@
 namespace MegaMonster.MessagingModels.UserNotification;
 
-public class UserNotificationBase(string userName, string email) : BaseNotificationMessage(userName, email)
+public class UserNotificationBase(string userName, string email, string confirmationLink = null) : BaseNotificationMessage(userName, email)
 {
-    
+    public string ConfirmationLink { get; set; } = confirmationLink;
 }

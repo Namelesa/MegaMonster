@@ -66,4 +66,19 @@ public class UserRepository(AppDbContext db, ILogger<UserRepository> logger) : I
     {
         return await db.Users.FirstOrDefaultAsync(u=> u.Id == userId.ToString());
     }
+
+    public async Task<bool> ConfirmEmailAsync(Users user)
+    {
+        try
+        {
+            user.EmailConfirmed = true;
+            await db.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
+    }
 }

@@ -12,7 +12,7 @@ public class NotifyUserConsumer(INotification notificationService) : IConsumer<U
         Console.WriteLine($"Received Message ID: {context.MessageId}");
         Console.WriteLine($"User with name {context.Message.UserName} was notify");
 
-        var userDto = new UserDto(context.Message.UserName, context.Message.Email);
+        var userDto = new UserDto(context.Message.UserName, context.Message.Email, context.Message.ConfirmationLink);
         await notificationService.SendConfirmEmailAsync(userDto);
     }
 }
