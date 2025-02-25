@@ -54,7 +54,8 @@ public class PaymentController(PaymentService paymentService, IPublishEndpoint p
             {
                 var publishCardModel = new InfoForCardPayment(int.Parse(isSuccess.orderId), isSuccess.transactionId);
                 await publishEndpoint.Publish(publishCardModel);
-                return Redirect("https://localhost:7215/swagger/index.html");
+                return Ok();
+                //return Redirect("https://localhost/");
             }
             else
             {

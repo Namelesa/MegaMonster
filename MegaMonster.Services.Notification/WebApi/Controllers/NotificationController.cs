@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MegaMonster.Services.Notification.WebApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/notification")]
 public class NotificationController(INotification notificationService, UserValidator userValidator, BillUserValidator billUserValidator) : ControllerBase
 {
     [HttpPost("confirmRegister")]
