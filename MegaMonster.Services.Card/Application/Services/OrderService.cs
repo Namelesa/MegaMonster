@@ -125,13 +125,17 @@ public class OrderService(IOrderRepository orderRepository,
     {
         var orders = await orderRepository.GetOrdersUserId(userId);
         
-        var filteredOrders = orders
+        var filteredOrdersCard = orders
             .Where(order => order.Status == Wc.CreatedStatus && order.PaymentType == Wc.PaymentTypeCard)
+            .ToList();
+        
+        var filteredOrdersCash = orders
+            .Where(order => order.Status == Wc.CreatedStatus && order.PaymentType == Wc.PaymentTypeCash)
             .ToList();
         
         var paymentInfoList = new List<InfoPaymentModel>();
 
-        foreach (var order in filteredOrders)
+        foreach (var order in filteredOrdersCard)
         {
             var infoForPayment = new InfoPaymentModel(
                 orderId: order.Id, 
@@ -148,6 +152,20 @@ public class OrderService(IOrderRepository orderRepository,
             Payments = paymentInfoList
         };
         await publishEndpoint.Publish(paymentInfo);
+        
+        
+        foreach (var order in filteredOrdersCash)
+        {
+            var response = await userRequestClient.GetResponse<UserEmailResponse>(new UserEmailRequest{Id = order.UserId});
+            var ticketsId = await orderRepository.GetTicketsIdByUserId(order.UserId); 
+            
+            var notifyUserBill = new InfoBillModel(order.UserName, order.PaymentType, order.Status, order.Sum, order.Id, response.Message.Email)
+            {
+                TicketsIds = ticketsId
+            };
+            await publishEndpoint.Publish(notifyUserBill);
+        }
+        
         return OperationResult<string>.Ok("");
     }
 }
