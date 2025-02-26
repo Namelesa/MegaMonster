@@ -177,13 +177,31 @@ public class PaymentService(string publicKey, string privateKey, AppDbContext db
         return false;
     }
 
+    public async Task<bool> AddCardPaymentsAsync(Guid orderId, string userName, double sum, int count)
+    {
+        var payment = new Payments
+        {
+            OrderId = orderId,
+            UserName = userName,
+            Sum = sum,
+            Count = count,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await db.Payments.AddAsync(payment);
+        await db.SaveChangesAsync();
+
+        return true;
+    }
+    
+
     private async Task<Payments> GetPaymentAsync(Guid orderId)
     {
         Console.WriteLine($"Searching for payment with OrderId = {orderId}");
         return await db.Payments.FirstOrDefaultAsync(p => p.OrderId == orderId)
                ?? throw new InvalidOperationException($"Payment not found {orderId}.");
     }
-
+    
     private async Task SavePaymentAsync(Payments payment)
     {
         db.Payments.Update(payment);

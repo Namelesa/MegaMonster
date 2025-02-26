@@ -88,6 +88,7 @@ builder.Services.AddSingleton(sp =>
 builder.Services.AddMassTransit(busConfiguration =>
 {
     busConfiguration.AddConsumer<PaymentConsumer>();
+    busConfiguration.AddConsumer<PaymentCashConsumer>();
     busConfiguration.UsingRabbitMq((context, configurator) =>
     {
         MessageBrokerSettings settings = context.GetRequiredService<MessageBrokerSettings>();
@@ -100,6 +101,10 @@ builder.Services.AddMassTransit(busConfiguration =>
         configurator.ReceiveEndpoint("payment-service-queue", e =>
         {
             e.ConfigureConsumer<PaymentConsumer>(context);
+        });
+        configurator.ReceiveEndpoint("cah-payment-cash-queue", e =>
+        {
+            e.ConfigureConsumer<PaymentCashConsumer>(context);
         });
     });
 });

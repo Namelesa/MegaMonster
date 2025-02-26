@@ -5,6 +5,7 @@ using MegaMonster.Services.Card.Core.Interfaces;
 using MegaMonster.Services.Card.Core.Models;
 using MegaMonster.Services.Card.Infrastructure.Redis;
 using MegaMonster.MessagingModels.InfoPayment;
+using MegaMonster.MessagingModels.InfoPayment.CashPaymentModels;
 using MegaMonster.MessagingModels.UserInformation.UserEmail;
 
 namespace MegaMonster.Services.Card.Application.Services;
@@ -153,7 +154,6 @@ public class OrderService(IOrderRepository orderRepository,
         };
         await publishEndpoint.Publish(paymentInfo);
         
-        
         foreach (var order in filteredOrdersCash)
         {
             var response = await userRequestClient.GetResponse<UserEmailResponse>(new UserEmailRequest{Id = order.UserId});
@@ -165,6 +165,26 @@ public class OrderService(IOrderRepository orderRepository,
             };
             await publishEndpoint.Publish(notifyUserBill);
         }
+        
+        var paymentInfoCashList = new List<InfoPaymentCash>();
+
+        foreach (var order in filteredOrdersCash)
+        {
+            var infoForPayment = new InfoPaymentCash(
+                orderId: order.Id, 
+                count: order.OrderDetails.Count,
+                userName: order.UserName,
+                sum: order.Sum
+            );
+
+            paymentInfoCashList.Add(infoForPayment);
+        }
+
+        var paymentInfoCash = new InfoPaymentListCash()
+        {
+            Payments = paymentInfoCashList
+        };
+        await publishEndpoint.Publish(paymentInfoCash);
         
         return OperationResult<string>.Ok("");
     }
