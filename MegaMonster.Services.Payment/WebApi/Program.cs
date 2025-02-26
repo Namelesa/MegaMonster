@@ -106,11 +106,12 @@ builder.Services.AddMassTransit(busConfiguration =>
 
 var app = builder.Build();
 
+app.UseSwagger();
+app.UseSwaggerUI();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
 
 using (var scope = app.Services.CreateScope())

@@ -37,6 +37,16 @@ public class PaymentController(PaymentService paymentService, IPublishEndpoint p
         }
     }
     
+    [HttpPost("cancel")]
+    public async Task<IActionResult> CanceledPayment([FromBody] CancelPaymentRequest request)
+    {
+        if (request.OrderId == Guid.Empty)
+            return BadRequest("Invalid orderId");
+
+        var result = await paymentService.CancelPaymentAsync(request.OrderId);
+        return result ? Ok("Cancel payment") : BadRequest("Errors");
+    }
+    
     [HttpPost("result")]
     [ApiExplorerSettings(IgnoreApi = true)]
     public async Task<IActionResult> HandlePaymentResult()

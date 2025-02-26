@@ -93,7 +93,7 @@ public class PaymentService(string publicKey, string privateKey, AppDbContext db
             return (false, orderId, null);
         }
 
-        var payment = await GetPaymentAsync(orderId);
+        var payment = await GetPaymentAsync(Guid.Parse(orderId));
 
         if (signature != GenerateSignature(base64Data))
         {
@@ -127,20 +127,61 @@ public class PaymentService(string publicKey, string privateKey, AppDbContext db
         return (false, orderId, transactionId);
     }
 
-    public async Task<bool> CancelPaymentAsync(int orderId)
+    public async Task<bool> CancelPaymentAsync(Guid orderId)
     {
-        var payment = await GetPaymentAsync(orderId.ToString());
-        if (payment.Status != PaymentSettings.IsCreated) return false;
-        payment.Status = PaymentSettings.IsCanceled;
-        await SavePaymentAsync(payment);
-        return true;
+        var payment = await GetPaymentAsync(orderId);
+        if (payment == null || payment.Status != PaymentSettings.IsSuccess)
+        {
+            Console.WriteLine("Payment not found or cannot be refunded.");
+            return false;
+        }
+
+        var data = new Dictionary<string, string>
+        {
+            { "version", PaymentSettings.ApiVersion.ToString() },
+            { "public_key", publicKey },
+            { "action", "refund" },
+            { "order_id", orderId.ToString() },
+            { "amount", payment.Sum.ToString("F2", CultureInfo.InvariantCulture) }
+        };
+
+        var json = JsonConvert.SerializeObject(data);
+        var base64Data = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
+        var signature = GenerateSignature(base64Data);
+
+        using var httpClient = new HttpClient();
+        var formData = new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            { "data", base64Data },
+            { "signature", signature }
+        });
+
+        var response = await httpClient.PostAsync(PaymentSettings.LiqpayApiRequestUrl, formData);
+        var responseBody = await response.Content.ReadAsStringAsync();
+
+        if (responseBody.StartsWith("<"))
+        {
+            throw new Exception($"Unexpected response from LiqPay: {responseBody}");
+        }
+
+        var responseData = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseBody);
+    
+        if (responseData.TryGetValue("status", out var status) && status == "reversed")
+        {
+            payment.Status = PaymentSettings.IsCanceled;
+            await SavePaymentAsync(payment);
+            return true;
+        }
+
+        Console.WriteLine($"Refund failed. LiqPay response: {responseBody}");
+        return false;
     }
 
-    private async Task<Payments> GetPaymentAsync(string orderId)
+    private async Task<Payments> GetPaymentAsync(Guid orderId)
     {
         Console.WriteLine($"Searching for payment with OrderId = {orderId}");
-        return await db.Payments.SingleOrDefaultAsync(p => p.OrderId.ToString() == orderId)
-               ?? throw new InvalidOperationException("Payment not found.");
+        return await db.Payments.FirstOrDefaultAsync(p => p.OrderId == orderId)
+               ?? throw new InvalidOperationException($"Payment not found {orderId}.");
     }
 
     private async Task SavePaymentAsync(Payments payment)
