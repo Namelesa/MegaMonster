@@ -14,10 +14,10 @@ public class OrderService(IOrderRepository orderRepository,
     IPublishEndpoint publishEndpoint,
     IRequestClient<UserEmailRequest> userRequestClient)
 {
-    public async Task<List<int>> GetOrdersIdByUserId(Guid userId)
+    public async Task<List<Guid>> GetOrdersIdByUserId(Guid userId)
     {
         var cacheKey = $"OrdersId_{userId}";
-        var cachedOrders = await redisService.GetAsync<List<int>>(cacheKey);
+        var cachedOrders = await redisService.GetAsync<List<Guid>>(cacheKey);
         if (cachedOrders != null && cachedOrders.Count != 0)
         {
             return cachedOrders;
@@ -42,7 +42,7 @@ public class OrderService(IOrderRepository orderRepository,
         return history;
     }
 
-    public async Task<OperationResult<string>> DeleteById(int id)
+    public async Task<OperationResult<string>> DeleteById(Guid id)
     {
         var order = await orderRepository.GetOrder(id);
         if (order != null)
@@ -70,7 +70,7 @@ public class OrderService(IOrderRepository orderRepository,
         return OperationResult<string>.Fail("Error with adding order");
     }
     
-    public async Task<Order?> GetAllOrder(int orderId)
+    public async Task<Order?> GetAllOrder(Guid orderId)
     {
         var order = await orderRepository.GetAllOrderInfo(orderId);
         return order;
@@ -89,7 +89,7 @@ public class OrderService(IOrderRepository orderRepository,
         return OperationResult<string>.Fail("Cannot update this order");
     }
     
-    public async Task<OperationResult<Order>> UpdateOrderStatus(int orderId, string bill)
+    public async Task<OperationResult<Order>> UpdateOrderStatus(Guid orderId, string bill)
     {
         var order = await orderRepository.GetAllOrderInfo(orderId);
     

@@ -57,7 +57,7 @@ public class OrderDetailsRepository(AppDbContext db) : IOrderDetailsRepository
         }
     }
 
-    public async Task<IEnumerable<OrderDetails>> GetDetailsForOrder(List<int> orderIds)
+    public async Task<IEnumerable<OrderDetails>> GetDetailsForOrder(List<Guid> orderIds)
     {
         return await db.OrdersDetails.Where(od => orderIds.Contains(od.OrderId)).ToListAsync();
     }

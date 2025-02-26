@@ -98,7 +98,7 @@ public class CardController(OrderService orderService, OrderDetailsService order
     // Put Requests //
     [Authorize]
     [HttpPut("edit")]
-    public async Task<IActionResult> EditCard([Required] int orderId, [Required] int orderDetailsId, [FromBody] OrderEditDto orderEditDto)
+    public async Task<IActionResult> EditCard([Required] Guid orderId, [Required] Guid orderDetailsId, [FromBody] OrderEditDto orderEditDto)
     {
         if (!ModelState.IsValid)
         {
@@ -129,7 +129,7 @@ public class CardController(OrderService orderService, OrderDetailsService order
     // Delete Requests //
     [Authorize]
     [HttpDelete("delete")]
-    public async Task<IActionResult> DeleteCard([Required] int orderId)
+    public async Task<IActionResult> DeleteCard([Required] Guid orderId)
     {
         var result = await orderService.DeleteById(orderId);
         return result.Success ? Ok("Order deleted") : BadRequest(result.Message);

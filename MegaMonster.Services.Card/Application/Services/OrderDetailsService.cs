@@ -1,13 +1,12 @@
 using MegaMonster.Services.Card.Core.Interfaces;
 using MegaMonster.Services.Card.Core.Models;
-using MegaMonster.Services.Card.Infrastructure;
 using MegaMonster.Services.Card.Infrastructure.Redis;
 
 namespace MegaMonster.Services.Card.Application.Services;
 
 public class OrderDetailsService(IOrderDetailsRepository orderDetailsRepository, IRedisService redisService)
 {
-    public async Task<IEnumerable<OrderDetails>> GetOrderDetails(List<int> orderIds)
+    public async Task<IEnumerable<OrderDetails>> GetOrderDetails(List<Guid> orderIds)
     {
         var cacheKey = $"OrderDetails_{string.Join("_", orderIds)}";
         var cachedDetails = await redisService.GetAsync<IEnumerable<OrderDetails>>(cacheKey);

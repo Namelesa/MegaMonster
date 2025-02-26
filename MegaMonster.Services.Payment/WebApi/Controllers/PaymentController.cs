@@ -52,10 +52,9 @@ public class PaymentController(PaymentService paymentService, IPublishEndpoint p
 
             if (isSuccess.isSuccess)
             {
-                var publishCardModel = new InfoForCardPayment(int.Parse(isSuccess.orderId), isSuccess.transactionId);
+                var publishCardModel = new InfoForCardPayment(Guid.Parse(isSuccess.orderId), isSuccess.transactionId);
                 await publishEndpoint.Publish(publishCardModel);
-                return Ok();
-                //return Redirect("https://localhost/");
+                return Redirect("https://localhost/");
             }
             else
             {

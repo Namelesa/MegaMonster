@@ -9,7 +9,7 @@ public class Payments
     public int Id { get; set; }
 
     [JsonProperty("order_id")]
-    public int OrderId { get; set; }
+    public Guid OrderId { get; set; }
 
     [JsonProperty("status")]
     public string Status { get; set; } = PaymentSettings.IsCreated;

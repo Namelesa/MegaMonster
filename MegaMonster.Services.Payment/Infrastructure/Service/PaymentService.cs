@@ -10,7 +10,7 @@ namespace MegaMonster.Services.Payment.Infrastructure.Service;
 
 public class PaymentService(string publicKey, string privateKey, AppDbContext db)
 {
-    private string CreatePayment(int orderId, string userName, double amount, int count, string action)
+    private string CreatePayment(Guid orderId, string userName, double amount, int count, string action)
     {
         var description = $"User name: {userName}, ticket count: {count}, Sum: {amount} UAH";
         var data = new Dictionary<string, string>
@@ -42,7 +42,7 @@ public class PaymentService(string publicKey, string privateKey, AppDbContext db
         return Convert.ToBase64String(hash);
     }
 
-    public async Task<string> CreatePaymentAsync(int orderId, string userName, double amount, int count, string action)
+    public async Task<string> CreatePaymentAsync(Guid orderId, string userName, double amount, int count, string action)
     {
         if (count <= 0 || amount <= 0) return "Count and sum must be > 0";
 

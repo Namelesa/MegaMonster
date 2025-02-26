@@ -6,7 +6,7 @@ public class OrderDetails : BaseModel
 {
     public int TicketId { get; set; }
 
-    public int OrderId { get; set; }
+    public Guid OrderId { get; set; }
     [JsonIgnore]
     public Order Order { get; set; }
 }

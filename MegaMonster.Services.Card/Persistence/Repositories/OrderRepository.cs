@@ -57,7 +57,7 @@ public class OrderRepository(AppDbContext db) : IOrderRepository
         }
     }
 
-    public async Task<List<int>> GetOrdersIdByUserId(Guid userId)
+    public async Task<List<Guid>> GetOrdersIdByUserId(Guid userId)
     {
         var orders = await db.Orders.Where(t => t.UserId == userId).ToListAsync();
         return orders.Select(o => o.Id).ToList();
@@ -80,12 +80,12 @@ public class OrderRepository(AppDbContext db) : IOrderRepository
             .ToListAsync();
     }
 
-    public async Task<Order?> GetOrder(int id)
+    public async Task<Order?> GetOrder(Guid id)
     {
         return await db.Orders.FirstOrDefaultAsync(u => u.Id == id);
     }
     
-    public async Task<Order?> GetAllOrderInfo(int orderId)
+    public async Task<Order?> GetAllOrderInfo(Guid orderId)
     {
         return await db.Orders
             .Include(o => o.OrderDetails)
