@@ -21,7 +21,7 @@ public class PaymentCashConsumer(PaymentService paymentService, ILogger<PaymentC
                     paymentInfo.Count
                 );
 
-                if (!result)
+                if (result)
                 {
                     logger.LogInformation($"Payment generated for Order ID {paymentInfo.OrderId}");
                 }

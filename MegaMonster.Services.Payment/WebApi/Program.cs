@@ -102,7 +102,7 @@ builder.Services.AddMassTransit(busConfiguration =>
         {
             e.ConfigureConsumer<PaymentConsumer>(context);
         });
-        configurator.ReceiveEndpoint("cah-payment-cash-queue", e =>
+        configurator.ReceiveEndpoint("cash-payment-cash-queue", e =>
         {
             e.ConfigureConsumer<PaymentCashConsumer>(context);
         });

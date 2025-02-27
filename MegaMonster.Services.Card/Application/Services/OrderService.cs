@@ -152,7 +152,11 @@ public class OrderService(IOrderRepository orderRepository,
         {
             Payments = paymentInfoList
         };
-        await publishEndpoint.Publish(paymentInfo);
+        Console.WriteLine($"Test = {paymentInfo.Payments.Count}");
+        if (paymentInfo.Payments.Count > 0)
+        {
+            await publishEndpoint.Publish(paymentInfo);
+        }
         
         foreach (var order in filteredOrdersCash)
         {
@@ -184,7 +188,12 @@ public class OrderService(IOrderRepository orderRepository,
         {
             Payments = paymentInfoCashList
         };
-        await publishEndpoint.Publish(paymentInfoCash);
+        if (paymentInfoCash.Payments.Count > 0)
+        {
+            Console.WriteLine($"Processing cash payments: {paymentInfoCash.Payments.Count}");
+            await publishEndpoint.Publish(paymentInfoCash);
+        }
+
         
         return OperationResult<string>.Ok("");
     }
