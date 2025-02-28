@@ -126,9 +126,6 @@ builder.Services.AddMassTransit(busConfiguration =>
     busConfiguration.AddRequestClient<UserRequest>();
 });
 
-builder.Services.AddIdentity<Users, IdentityRole>()
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddDefaultTokenProviders();
 
 var app = builder.Build();
 

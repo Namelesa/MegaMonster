@@ -1,10 +1,13 @@
 using System.Text;
 using MassTransit;
+using MegaMonster.Services.Payment.Application.Services;
+using MegaMonster.Services.Payment.Core.Interfaces;
 using MegaMonster.Services.Payment.Infrastructure.MessageBroker;
 using MegaMonster.Services.Payment.Infrastructure.Messaging;
 using MegaMonster.Services.Payment.Infrastructure.Service;
 using MegaMonster.Services.Payment.Persistence.Data;
 using MegaMonster.Services.Payment.Persistence.DbInitializer;
+using MegaMonster.Services.Payment.Persistence.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -65,7 +68,16 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 var publicKey = builder.Configuration["LiqPay:publicKey"] ?? throw new ArgumentNullException("LiqPay:publicKey not configured");
 var privateKey = builder.Configuration["LiqPay:secretKey"] ?? throw new ArgumentNullException("LiqPay:secretKey not configured");
-builder.Services.AddScoped(options => new PaymentService(publicKey, privateKey, options.GetRequiredService<AppDbContext>()));
+
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<PaymentServiceRepository>();
+builder.Services.AddScoped<PaymentService>(provider => 
+    new PaymentService(
+        publicKey,
+        privateKey,
+        provider.GetRequiredService<PaymentServiceRepository>()
+    )
+);
 
 builder.Services.AddCors(options =>
 {

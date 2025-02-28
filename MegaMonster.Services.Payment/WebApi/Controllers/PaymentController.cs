@@ -2,14 +2,18 @@ using MassTransit;
 using MegaMonster.Services.Payment.Infrastructure.Service;
 using MegaMonster.Services.Payment.WebApi.Dto_s;
 using MegaMonster.MessagingModels.InfoPayment;
+using MegaMonster.Services.Payment.Application.Services;
+using MegaMonster.Services.Payment.Infrastructure;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace MegaMonster.Services.Payment.WebApi.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/payment")]
-public class PaymentController(PaymentService paymentService, IPublishEndpoint publishEndpoint) : ControllerBase
+public class PaymentController(PaymentService paymentService, IPublishEndpoint publishEndpoint, PaymentServiceRepository paymentServiceRepository) : ControllerBase
 {
     [HttpPost("createPayment")]
     public async Task<IActionResult> CreatePayment([FromForm] PaymentRequestDto request)
@@ -75,5 +79,19 @@ public class PaymentController(PaymentService paymentService, IPublishEndpoint p
         {
             return StatusCode(500, new { message = $"Error: {ex.Message}" });
         }
+    }
+    
+    [Authorize(Roles = "Admin")]
+    [HttpPost]
+    public async Task<IActionResult> UpdatePaymentStatusForCash(Guid orderId)
+    {
+        var payment = await paymentServiceRepository.GetPaymentByOrderId(orderId);
+        if (!payment.Success) return BadRequest(payment.Message);
+        
+        if (payment.Data == null) return BadRequest(payment.Message);
+        payment.Data.Status = PaymentSettings.IsSuccess;
+        
+        var result = await paymentServiceRepository.UpdatePayment(payment.Data);
+        return result.Success ? Ok("Status was changed") : BadRequest(result.Message);
     }
 }

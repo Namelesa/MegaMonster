@@ -9,5 +9,6 @@ namespace MegaMonster.Services.Payment.Infrastructure
         public const string IsSuccess = "success";
         public const string IsCanceled = "canceled";
         public const string IsUnknown = "unknow";
+        public const string IsCash = "cash";
     }
 }

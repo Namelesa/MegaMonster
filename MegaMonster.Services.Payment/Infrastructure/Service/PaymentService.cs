@@ -1,14 +1,13 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using MegaMonster.Services.Payment.Application.Services;
 using MegaMonster.Services.Payment.Core.Models;
-using MegaMonster.Services.Payment.Persistence.Data;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace MegaMonster.Services.Payment.Infrastructure.Service;
 
-public class PaymentService(string publicKey, string privateKey, AppDbContext db)
+public class PaymentService(string publicKey, string privateKey, PaymentServiceRepository paymentServiceRepository)
 {
     private string CreatePayment(Guid orderId, string userName, double amount, int count, string action)
     {
@@ -57,9 +56,13 @@ public class PaymentService(string publicKey, string privateKey, AppDbContext db
             CreatedAt = DateTime.UtcNow
         };
 
-        await db.Payments.AddAsync(payment);
-        await db.SaveChangesAsync();
-        return paymentUrl;
+        var result = await paymentServiceRepository.AddPayment(payment);
+        if (result.Success)
+        {
+            return paymentUrl;
+        }
+
+        return result.Message;
     }
 
     public async Task<(bool isSuccess, string orderId, string transactionId)> HandlePaymentResultAsync(Dictionary<string, string> requestDictionary)
@@ -93,7 +96,7 @@ public class PaymentService(string publicKey, string privateKey, AppDbContext db
             return (false, orderId, null);
         }
 
-        var payment = await GetPaymentAsync(Guid.Parse(orderId));
+        var payment = await paymentServiceRepository.GetPaymentByOrderId(Guid.Parse(orderId));
 
         if (signature != GenerateSignature(base64Data))
         {
@@ -103,15 +106,15 @@ public class PaymentService(string publicKey, string privateKey, AppDbContext db
 
         if (requestData.TryGetValue("status", out var status))
         {
-            if (payment.Status == PaymentSettings.IsCreated)
+            if (payment.Data.Status == PaymentSettings.IsCreated)
             {
-                payment.Status = status switch
+                payment.Data.Status = status switch
                 {
                     "success" => PaymentSettings.IsSuccess,
                     "failure" or "error" or "reversed" => PaymentSettings.IsCanceled,
                     _ => PaymentSettings.IsUnknown
                 };
-                await SavePaymentAsync(payment);
+                await paymentServiceRepository.UpdatePayment(payment.Data);
             }
             else
             {
@@ -129,8 +132,8 @@ public class PaymentService(string publicKey, string privateKey, AppDbContext db
 
     public async Task<bool> CancelPaymentAsync(Guid orderId)
     {
-        var payment = await GetPaymentAsync(orderId);
-        if (payment == null || payment.Status != PaymentSettings.IsSuccess)
+        var payment = await paymentServiceRepository.GetPaymentByOrderId(orderId);
+        if (payment.Data == null || payment.Data.Status != PaymentSettings.IsSuccess)
         {
             Console.WriteLine("Payment not found or cannot be refunded.");
             return false;
@@ -142,7 +145,7 @@ public class PaymentService(string publicKey, string privateKey, AppDbContext db
             { "public_key", publicKey },
             { "action", "refund" },
             { "order_id", orderId.ToString() },
-            { "amount", payment.Sum.ToString("F2", CultureInfo.InvariantCulture) }
+            { "amount", payment.Data.Sum.ToString("F2", CultureInfo.InvariantCulture) }
         };
 
         var json = JsonConvert.SerializeObject(data);
@@ -168,9 +171,9 @@ public class PaymentService(string publicKey, string privateKey, AppDbContext db
     
         if (responseData.TryGetValue("status", out var status) && status == "reversed")
         {
-            payment.Status = PaymentSettings.IsCanceled;
-            await SavePaymentAsync(payment);
-            return true;
+            payment.Data.Status = PaymentSettings.IsCanceled;
+            var result = await paymentServiceRepository.UpdatePayment(payment.Data);
+            return result.Success;
         }
 
         Console.WriteLine($"Refund failed. LiqPay response: {responseBody}");
@@ -185,26 +188,10 @@ public class PaymentService(string publicKey, string privateKey, AppDbContext db
             UserName = userName,
             Sum = sum,
             Count = count,
+            Status = PaymentSettings.IsCash,
             CreatedAt = DateTime.UtcNow
         };
-
-        await db.Payments.AddAsync(payment);
-        await db.SaveChangesAsync();
-
-        return true;
-    }
-    
-
-    private async Task<Payments> GetPaymentAsync(Guid orderId)
-    {
-        Console.WriteLine($"Searching for payment with OrderId = {orderId}");
-        return await db.Payments.FirstOrDefaultAsync(p => p.OrderId == orderId)
-               ?? throw new InvalidOperationException($"Payment not found {orderId}.");
-    }
-    
-    private async Task SavePaymentAsync(Payments payment)
-    {
-        db.Payments.Update(payment);
-        await db.SaveChangesAsync();
+        var result = await paymentServiceRepository.AddPayment(payment);
+        return result.Success;
     }
 }
