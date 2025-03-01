@@ -1,4 +1,5 @@
 using MassTransit;
+using MegaMonster.MessagingModels.EditUserMessage;
 using MegaMonster.Services.User.Application.ResultOperation;
 using MegaMonster.Services.User.Application.Validation.UserValidator;
 using MegaMonster.Services.User.Core.Interfaces;
@@ -74,9 +75,13 @@ public class UserService(IUserRepository userRepository,
             var validationResult = await ValidateUser(user);
             if (!validationResult.Success) return validationResult;
 
-            return await userRepository.EditAsync(user)
-                ? OperationResult.Ok()
-                : OperationResult.Fail("Failed to edit user.");
+            var result = await userRepository.EditAsync(user);
+            if (!result) return OperationResult.Fail("Can not update User");
+
+            var updateUserMessage = new UserEditMessage(login, newLogin, email, userName, phoneNumber);
+            await publishEndpoint.Publish(updateUserMessage);
+
+            return OperationResult.Ok();
         });
 
     public async Task<OperationResult> DeleteUser(string login, string reason) =>

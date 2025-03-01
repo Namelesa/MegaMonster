@@ -12,4 +12,20 @@ public class LoginRepository(AppDbContext db) : ILoginRepository
     
     public async Task<Users?> FindUser(string login) =>
         await db.Users.FirstOrDefaultAsync(u => u.Login == login);
+
+    public async Task<bool> UpdateUser(Users user)
+    {
+        try
+        {
+            db.Users.Update(user);
+            await db.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
+        
+    }
 }

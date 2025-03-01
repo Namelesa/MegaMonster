@@ -124,7 +124,22 @@ public class AuthService(
         }
         return OperationResult.Fail("Invalid or expired token");
     }
+    
+    public async Task<OperationResult> EditUser(string oldLogin, string userName, string email, string phoneNumber, string newLogin) 
+    {
+        var user = await loginRepository.FindUser(oldLogin);
+        if (user == null) return OperationResult.Fail("User not found");
 
+        user.UserName = userName;
+        user.Login = newLogin;
+        user.PhoneNumber = phoneNumber;
+        user.Email = email;
+        user.NormalizedUserName = userName.ToUpper();
+        user.NormalizedEmail = email.ToUpper();
+        
+        var result = await loginRepository.UpdateUser(user);
+        return result ? OperationResult.Ok("User edited successfully") : OperationResult.Fail("Error with editing user info");
+    }
     
     private async Task<OperationResult> ValidateInfo(Users user)
     {

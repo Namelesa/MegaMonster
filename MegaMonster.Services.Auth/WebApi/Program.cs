@@ -104,6 +104,7 @@ builder.Services.AddMassTransit(busConfiguration =>
 {
     busConfiguration.AddConsumer<AddAdminConsumer>();
     busConfiguration.AddConsumer<BanUserConsumer>();
+    busConfiguration.AddConsumer<EditUserConsumer>();
     
     busConfiguration.UsingRabbitMq((context, configurator) =>
     {
@@ -121,6 +122,10 @@ builder.Services.AddMassTransit(busConfiguration =>
         configurator.ReceiveEndpoint("ban-auth-user-queue", e =>
         {
             e.ConfigureConsumer<BanUserConsumer>(context);
+        });
+        configurator.ReceiveEndpoint("edit-auth-user-queue", e =>
+        {
+            e.ConfigureConsumer<EditUserConsumer>(context);
         });
     });
     busConfiguration.AddRequestClient<UserRequest>();

@@ -82,7 +82,7 @@ public class PaymentController(PaymentService paymentService, IPublishEndpoint p
     }
     
     [Authorize(Roles = "Admin")]
-    [HttpPost]
+    [HttpPost("update-status")]
     public async Task<IActionResult> UpdatePaymentStatusForCash(Guid orderId)
     {
         var payment = await paymentServiceRepository.GetPaymentByOrderId(orderId);
