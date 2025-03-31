@@ -38,7 +38,7 @@ public class RegisterRepository(AppDbContext db, PasswordHasher<Users> passwordH
     public async Task<string> BanUser(string email)
     {
         var user = await db.Users.FirstOrDefaultAsync(u=> u.Email == email && !u.IsBan);
-        if (user == null) return "User not found";
+        if (user == null) return "Register not found";
 
         user.IsBan = true;
         await db.SaveChangesAsync();
@@ -59,6 +59,24 @@ public class RegisterRepository(AppDbContext db, PasswordHasher<Users> passwordH
             return true;
         }
         catch(Exception e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
+    }
+
+    public async Task<bool> DeleteUserByLogin(string login)
+    {
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Login == login);
+        if (user == null) return false;
+
+        try
+        {
+            db.Users.Remove(user);
+            await db.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
         {
             Console.WriteLine(e);
             return false;

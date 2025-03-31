@@ -20,13 +20,13 @@ public class AuthService(
     public async Task<OperationResult> RegisterUser(string password, string email, string userName, string login, string phoneNumber, string? role = null)
     {
         var checkLoginAndEmail = await registerRepository.CheckLoginAndEmail(login, email);
-        if (checkLoginAndEmail) return OperationResult.Fail("User with the same email\n" +
+        if (checkLoginAndEmail) return OperationResult.Fail("Register with the same email\n" +
                                                             "or login already exists");
         
         var checkUser = await loginRepository.FindUser(login);
-        if (checkUser != null && checkUser.IsBan) return OperationResult.Fail("user is baned");
+        if (checkUser is { IsBan: true }) return OperationResult.Fail("user is baned");
         
-        Users user = new Users()
+        Users user = new Users
         {
             Email = email,
             UserName = userName,
@@ -39,10 +39,7 @@ public class AuthService(
         user.PasswordHash = await registerRepository.HashPassword(password, user);
         
         var validationResult = await ValidateInfo(user);
-        if (!validationResult.Success)
-        {
-            return validationResult;
-        }
+        if (!validationResult.Success) return validationResult;
         
         if (role == null)
         {
@@ -62,11 +59,11 @@ public class AuthService(
     public async Task<OperationResult> LoginUser(string password, string email, string login)
     {
         var checkLoginAndEmail = await registerRepository.CheckLoginAndEmail(login, email);
-        if (!checkLoginAndEmail) return OperationResult.Fail($"User with login '{login}' or with this email '{email}' not found\n" +
+        if (!checkLoginAndEmail) return OperationResult.Fail($"Register with login '{login}' or with this email '{email}' not found\n" +
                                                              $"or user is baned");
         
         var user = await loginRepository.FindUser(login);
-        if (user == null) return OperationResult.Fail("User not found");
+        if (user == null) return OperationResult.Fail("Register not found");
         
         if(!user.EmailConfirmed) return OperationResult.Fail("Please confirm email");
         
@@ -84,7 +81,7 @@ public class AuthService(
 
             if (string.IsNullOrEmpty(response.Message.UserId))
             {
-                return OperationResult.Fail("User not found in UserService");
+                return OperationResult.Fail("Register not found in UserService");
             }
 
             user.Id = response.Message.UserId;
@@ -99,21 +96,26 @@ public class AuthService(
         }
     }
 
-    public async Task BanUser(string email)
+    public async Task<OperationResult> BanUser(string email)
     {
         var result = await registerRepository.BanUser(email);
-        if (result == "User not found")
+        if (result == "Register not found")
         {
-            OperationResult.Fail(result);
-            return;
+            return OperationResult.Fail(result);
         }
-        OperationResult.Ok(result);
+        return OperationResult.Ok(result);
+    }
+    
+    public async Task<OperationResult> DeleteUser(string login)
+    {
+        var result = await registerRepository.DeleteUserByLogin(login);
+        return result ? OperationResult.Ok($"Register with login: {login} was deleted") : OperationResult.Fail($"Can not delete user with login {login}");
     }
     
     public async Task<OperationResult> ConfirmEmail(string email)
     {
         var user = await registerRepository.FindUserByEmail(email);
-        if (user == null) return OperationResult.Fail("User not found");
+        if (user == null) return OperationResult.Fail("Register not found");
 
         var result = await registerRepository.ConfirmEmailAsync(user);
         
@@ -128,7 +130,7 @@ public class AuthService(
     public async Task<OperationResult> EditUser(string oldLogin, string userName, string email, string phoneNumber, string newLogin) 
     {
         var user = await loginRepository.FindUser(oldLogin);
-        if (user == null) return OperationResult.Fail("User not found");
+        if (user == null) return OperationResult.Fail("Register not found");
 
         user.UserName = userName;
         user.Login = newLogin;
@@ -138,7 +140,12 @@ public class AuthService(
         user.NormalizedEmail = email.ToUpper();
         
         var result = await loginRepository.UpdateUser(user);
-        return result ? OperationResult.Ok("User edited successfully") : OperationResult.Fail("Error with editing user info");
+        return result ? OperationResult.Ok("Register edited successfully") : OperationResult.Fail("Error with editing user info");
+    }
+    
+    public async Task<Users?> FindUserByEmail(string email)
+    {
+        return await loginRepository.FindByEmail(email);
     }
     
     private async Task<OperationResult> ValidateInfo(Users user)

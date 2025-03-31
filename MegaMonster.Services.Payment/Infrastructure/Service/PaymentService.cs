@@ -11,7 +11,7 @@ public class PaymentService(string publicKey, string privateKey, PaymentServiceR
 {
     private string CreatePayment(Guid orderId, string userName, double amount, int count, string action)
     {
-        var description = $"User name: {userName}, ticket count: {count}, Sum: {amount} UAH";
+        var description = $"Register name: {userName}, ticket count: {count}, Sum: {amount} UAH";
         var data = new Dictionary<string, string>
         {
             {"version", PaymentSettings.ApiVersion.ToString()},

@@ -222,6 +222,7 @@
       - /Users/maksimbilyk/RiderProjects/MegaMonster/MegaMonster.Services.User/config/app-certificate.pfx:/certs/app-certificate.pfx:ro
     networks:
       - app_network
+        
 
   nginx:
     image: nginx:latest

@@ -2,7 +2,7 @@ using MassTransit;
 using MegaMonster.MessagingModels.UserInformation;
 using MegaMonster.Services.User.Application.Services;
 
-namespace MegaMonster.Services.User.Application.Messaging.Consumer;
+namespace MegaMonster.Services.User.Application.Messaging.User;
 
 public class UserConfirmConsumer(UserService userService) : IConsumer<ConfirmEmailUser>
 {

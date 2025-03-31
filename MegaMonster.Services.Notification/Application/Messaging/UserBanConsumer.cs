@@ -10,7 +10,7 @@ public class UserBanConsumer(INotification notificationService) : IConsumer<User
     public async Task Consume(ConsumeContext<UserBan> context)
     {
         Console.WriteLine($"Received Message ID: {context.MessageId}");
-        Console.WriteLine($"User with name {context.Message.UserName} was notify");
+        Console.WriteLine($"Register with name {context.Message.UserName} was notify");
 
         var userDto = new UserDto(context.Message.UserName, context.Message.Email);
         await notificationService.SendBanEmailAsync(userDto, context.Message.Reason);

@@ -22,7 +22,7 @@ public class UserRepository(AppDbContext db, ILogger<UserRepository> logger) : I
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error adding user: {User}", user);
+            logger.LogError(ex, "Error adding user: {Register}", user);
             return false;
         }
     }
@@ -37,7 +37,7 @@ public class UserRepository(AppDbContext db, ILogger<UserRepository> logger) : I
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error updating user: {User}", user);
+            logger.LogError(ex, "Error updating user: {Register}", user);
             return false;
         }
     }
@@ -52,7 +52,7 @@ public class UserRepository(AppDbContext db, ILogger<UserRepository> logger) : I
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error deleting user: {User}", user);
+            logger.LogError(ex, "Error deleting user: {Register}", user);
             return false;
         }
     }

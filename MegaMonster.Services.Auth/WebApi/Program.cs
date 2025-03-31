@@ -105,6 +105,7 @@ builder.Services.AddMassTransit(busConfiguration =>
     busConfiguration.AddConsumer<AddAdminConsumer>();
     busConfiguration.AddConsumer<BanUserConsumer>();
     busConfiguration.AddConsumer<EditUserConsumer>();
+    busConfiguration.AddConsumer<RollBackConsumer>();
     
     busConfiguration.UsingRabbitMq((context, configurator) =>
     {
@@ -126,6 +127,10 @@ builder.Services.AddMassTransit(busConfiguration =>
         configurator.ReceiveEndpoint("edit-auth-user-queue", e =>
         {
             e.ConfigureConsumer<EditUserConsumer>(context);
+        });
+        configurator.ReceiveEndpoint("rollback-user-queue", e =>
+        {
+            e.ConfigureConsumer<RollBackConsumer>(context);
         });
     });
     busConfiguration.AddRequestClient<UserRequest>();

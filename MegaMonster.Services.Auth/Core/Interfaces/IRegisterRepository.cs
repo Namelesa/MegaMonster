@@ -9,4 +9,5 @@ public interface IRegisterRepository : IRepository<Users>
     Task<Users?> FindUserByEmail(string email);
     Task<string> HashPassword(string password, Users? user);
     Task<string> BanUser(string email);
+    Task<bool> DeleteUserByLogin(string login);
 }

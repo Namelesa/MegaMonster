@@ -13,23 +13,21 @@ namespace MegaMonster.Services.User.Application.Services;
 public class UserService(IUserRepository userRepository, 
     UserValidation validation, 
     IRedisService redisService,
-    IPublishEndpoint publishEndpoint)
+    IPublishEndpoint publishEndpoint,
+    IBannedUserRepository bannedUserRepository)
 {
     private const string UsersCacheKey = "All_Users";
 
     public async Task<IEnumerable<Users>> GetAllUsers() =>
         await GetOrSetCache(UsersCacheKey, userRepository.GetAllAsync!);
-
     public async Task<Users?> FindByLoginAsync(string login)
     {
         return await userRepository.GetUserByLoginAsync(login);
     }
-    
     public async Task<Users?> FindByIdAsync(Guid userId)
     {
         return await userRepository.GetUserByIdAsync(userId);
     }
-
     public async Task<OperationResult> AddUser(Users user, string role) =>
         await HandleDatabaseOperation(async () =>
         {
@@ -63,12 +61,11 @@ public class UserService(IUserRepository userRepository,
             
             return OperationResult.Ok();
         });
-    
     public async Task<OperationResult> EditUser(string login, string userName, string email, string phoneNumber, string newLogin) =>
         await HandleDatabaseOperation(async () =>
         {
             var user = await userRepository.GetUserByLoginAsync(login);
-            if (user is null) return OperationResult.Fail($"User with login '{login}' not found.");
+            if (user is null) return OperationResult.Fail($"Register with login '{login}' not found.");
 
             UpdateUserInfo(user, userName, email, phoneNumber, newLogin);
 
@@ -76,22 +73,24 @@ public class UserService(IUserRepository userRepository,
             if (!validationResult.Success) return validationResult;
 
             var result = await userRepository.EditAsync(user);
-            if (!result) return OperationResult.Fail("Can not update User");
+            if (!result) return OperationResult.Fail("Can not update Register");
 
             var updateUserMessage = new UserEditMessage(login, newLogin, email, userName, phoneNumber);
             await publishEndpoint.Publish(updateUserMessage);
 
             return OperationResult.Ok();
         });
-
     public async Task<OperationResult> DeleteUser(string login, string reason) =>
         await HandleDatabaseOperation(async () =>
         {
             var user = await userRepository.GetUserByLoginAsync(login);
-            if (user is null) return OperationResult.Fail($"User with login '{login}' not found.");
+            if (user is null) return OperationResult.Fail($"Register with login '{login}' not found.");
 
             bool result = await userRepository.DeleteAsync(user);
             if (!result) return OperationResult.Fail("Failed to delete user.");
+
+            var banResult = await bannedUserRepository.AddAsync(user);
+            if (!banResult) return OperationResult.Fail("Failed to delete user.");
             
             var notify = new UserBan(user.Login, user.Email, reason);
             var banAuth = new UserBanForAuth(user.Email);
@@ -101,18 +100,26 @@ public class UserService(IUserRepository userRepository,
             
             return OperationResult.Ok();
         });
-
     public async Task<OperationResult> ConfirmEmail(string login)
     {
         var user = await userRepository.GetUserByLoginAsync(login);
         if (user == null)
         {
-            return OperationResult.Fail("User not found");
+            return OperationResult.Fail("Register not found");
         }
         var result = await userRepository.ConfirmEmailAsync(user);
         return result ? OperationResult.Ok() : OperationResult.Fail("Can not confirm email");
     }
-    
+    public async Task<OperationResult> UserBanRestoreAsync(string login)
+    {
+        var user = await bannedUserRepository.FindByLoginAsync(login);
+        if (user == null)
+        {
+            return OperationResult.Fail("Register not found");
+        }
+        var result = await userRepository.AddAsync(user);
+        return result ? OperationResult.Ok() : OperationResult.Fail("Can not restore user");
+    }
     private async Task<OperationResult> ValidateUser(Users user)
     {
         var validationResult = await validation.ValidateAsync(user);
@@ -120,7 +127,6 @@ public class UserService(IUserRepository userRepository,
             ? OperationResult.Fail(string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage)))
             : OperationResult.Ok();
     }
-
     private void UpdateUserInfo(Users user, string userName, string email, string phoneNumber, string newLogin)
     {
         user.Login = newLogin;
@@ -130,7 +136,6 @@ public class UserService(IUserRepository userRepository,
         user.Email = email;
         user.PhoneNumber = phoneNumber;
     }
-
     private async Task<T?> GetOrSetCache<T>(string key, Func<Task<T?>> getData, TimeSpan? expiration = null)
     {
         return await redisService.GetAsync<T>(key) 
@@ -142,7 +147,6 @@ public class UserService(IUserRepository userRepository,
                    return data;
                }).Unwrap();
     }
-
     private async Task<OperationResult> HandleDatabaseOperation(Func<Task<OperationResult>> operation)
     {
         var result = await operation();

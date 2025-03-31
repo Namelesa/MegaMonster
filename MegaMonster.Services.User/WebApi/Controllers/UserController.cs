@@ -54,7 +54,7 @@ public class UserController(UserService userService, RoleService roleService) : 
         };
         
         var result = await userService.AddUser(user, role);
-        return result.Success ? Ok("User added.") : BadRequest(new { error = result.Message });
+        return result.Success ? Ok("Register added.") : BadRequest(new { error = result.Message });
     }
     
     // Put Requests 
@@ -71,7 +71,7 @@ public class UserController(UserService userService, RoleService roleService) : 
     public async Task<IActionResult> EditUser([Required, FromBody] UserEditDto userEditDto, [Required] string login)
     {
         var result = await userService.EditUser(login, userEditDto.UserName, userEditDto.Email, userEditDto.PhoneNumber, userEditDto.Login);
-        return result.Success ? Ok("User updated") : BadRequest(new { error = result.Message });
+        return result.Success ? Ok("Register updated") : BadRequest(new { error = result.Message });
     }
     
     // Delete Requests
@@ -88,7 +88,7 @@ public class UserController(UserService userService, RoleService roleService) : 
     public async Task<IActionResult> DeleteUser([Required] string login, [Required] string reason)
     {
         var result = await userService.DeleteUser(login, reason);
-        return result.Success ? Ok("User banned") : BadRequest(new { error = result.Message });
+        return result.Success ? Ok("Register banned") : BadRequest(new { error = result.Message });
     }
     
     // Admin

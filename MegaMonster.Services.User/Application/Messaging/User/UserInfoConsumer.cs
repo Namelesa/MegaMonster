@@ -1,8 +1,8 @@
 using MassTransit;
-using MegaMonster.Services.User.Application.Services;
 using MegaMonster.MessagingModels.UserInformation;
+using MegaMonster.Services.User.Application.Services;
 
-namespace MegaMonster.Services.User.Application.Messaging.Consumer;
+namespace MegaMonster.Services.User.Application.Messaging.User;
 
 public class UserInfoConsumer(UserService userService, ILogger<UserInfoConsumer> logger) : IConsumer<UserRequest>
 {
@@ -13,7 +13,7 @@ public class UserInfoConsumer(UserService userService, ILogger<UserInfoConsumer>
         var user = await userService.FindByLoginAsync(login);
         if (user == null)
         {
-            logger.LogWarning($"User with login =  {login} not found");
+            logger.LogWarning($"Register with login =  {login} not found");
             await context.RespondAsync(new UserTicketModel("", ""));
             return;
         }

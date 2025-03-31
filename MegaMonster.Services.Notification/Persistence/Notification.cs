@@ -23,6 +23,7 @@ public class Notification(IEmailSender emailSender, ITemplateReader templateRead
             .Replace("{link}", userDto.ConfirmLink);
         Console.WriteLine(userDto.ConfirmLink);
         await emailSender.SendEmailAsync(userDto.Email, Wc.ConfirmEmail, htmlBody);
+        
         return true;
     }
     public async Task<bool> SendBillEmailAsync(BillUserDto userDto)

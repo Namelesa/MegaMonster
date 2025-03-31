@@ -6,6 +6,8 @@ namespace MegaMonster.Services.User.Persistence.Data;
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<Users> Users { get; set; }
+    
+    public DbSet<Users> BannedUsers { get; set; }
     public DbSet<Role> Roles { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)

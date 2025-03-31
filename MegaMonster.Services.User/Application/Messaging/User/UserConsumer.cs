@@ -1,16 +1,17 @@
 using MassTransit;
+using MegaMonster.MessagingModels.RollBacks.User;
+using MegaMonster.MessagingModels.UserAdding;
 using MegaMonster.Services.User.Application.Services;
 using MegaMonster.Services.User.Core.Models;
-using MegaMonster.MessagingModels.UserAdding;
 
-namespace MegaMonster.Services.User.Application.Messaging.Consumer;
+namespace MegaMonster.Services.User.Application.Messaging.User;
 
-public class UserConsumer(UserService userService, RoleService roleService) : IConsumer<UserModelMessage>
+public class UserConsumer(UserService userService, RoleService roleService, IPublishEndpoint publishEndpoint) : IConsumer<UserModelMessage>
 {
     public async Task Consume(ConsumeContext<UserModelMessage> context)
     {
         var user = context.Message;
-        Console.WriteLine($"User with name {user.UserName} was adding");
+        Console.WriteLine($"Register with name {user.UserName} was adding");
         
         var currentRole = await roleService.FindRoleByNameAsync(user.Role);
         if (currentRole == null) return;
@@ -27,7 +28,14 @@ public class UserConsumer(UserService userService, RoleService roleService) : IC
             PasswordHash = user.Password
         };
         
-        await userService.AddUser(userToAdd, currentRole.RoleName);
+        var result = await userService.AddUser(userToAdd, currentRole.RoleName);
+        if (!result.Success)
+        {
+            Console.WriteLine("Rollback from User Service");
+            var userRollBack = new RegisterUserRollBack(user.Login);
+        
+            await publishEndpoint.Publish(userRollBack);
+        }
         
         await Task.CompletedTask;
     }

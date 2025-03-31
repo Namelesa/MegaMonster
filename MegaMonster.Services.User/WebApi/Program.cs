@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using MassTransit;
-using MegaMonster.Services.User.Application.Messaging.Consumer;
+using MegaMonster.Services.User.Application.Messaging.User;
 using MegaMonster.Services.User.Application.Services;
 using MegaMonster.Services.User.Application.Validation.RoleValidator;
 using MegaMonster.Services.User.Application.Validation.UserValidator;
@@ -75,6 +75,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IBannedUserRepository, BannedUserRepository>();
 
 builder.Services.AddScoped<IRedisService, RedisService>();
 
@@ -98,6 +99,7 @@ builder.Services.AddMassTransit(busConfiguration =>
     busConfiguration.AddConsumer<UserInfoConsumer>();
     busConfiguration.AddConsumer<UserEmailConsumer>();
     busConfiguration.AddConsumer<UserConfirmConsumer>();
+    busConfiguration.AddConsumer<UserBanRollBackConsumer>();
     
     busConfiguration.UsingRabbitMq((context, configurator) =>
     {
@@ -124,6 +126,10 @@ builder.Services.AddMassTransit(busConfiguration =>
         configurator.ReceiveEndpoint("user-confirm-email-queue", e =>
         {
             e.ConfigureConsumer<UserConfirmConsumer>(context);
+        });
+        configurator.ReceiveEndpoint("user-ban-rollback-queue", e =>
+        {
+            e.ConfigureConsumer<UserBanRollBackConsumer>(context);
         });
     });
 });
