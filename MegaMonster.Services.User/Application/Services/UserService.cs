@@ -65,20 +65,35 @@ public class UserService(IUserRepository userRepository,
         await HandleDatabaseOperation(async () =>
         {
             var user = await userRepository.GetUserByLoginAsync(login);
+            var currentUser = user;
             if (user is null) return OperationResult.Fail($"Register with login '{login}' not found.");
-
+            
             UpdateUserInfo(user, userName, email, phoneNumber, newLogin);
+
+            var validationResult = await ValidateUser(user);
+            if (!validationResult.Success) return validationResult;
+            
+            var result = await userRepository.EditAsync(user);
+            if (!result) return OperationResult.Fail("Can not update Register");
+            
+            var updateUserMessage = new UserEditMessage(newLogin, login, currentUser.Email, currentUser.UserName, currentUser.PhoneNumber, email, userName, phoneNumber);
+            await publishEndpoint.Publish(updateUserMessage);
+
+            return OperationResult.Ok();
+        });
+    public async Task<OperationResult> EditUserRollBack(string login, string userName, string email, string phoneNumber, string newLogin) =>
+        await HandleDatabaseOperation(async () =>
+        {
+            var user = await userRepository.GetUserByLoginAsync(newLogin);
+            if (user is null) return OperationResult.Fail($"Register with login '{newLogin}' not found.");
+
+            UpdateUserInfo(user, userName, email, phoneNumber, login);
 
             var validationResult = await ValidateUser(user);
             if (!validationResult.Success) return validationResult;
 
             var result = await userRepository.EditAsync(user);
-            if (!result) return OperationResult.Fail("Can not update Register");
-
-            var updateUserMessage = new UserEditMessage(login, newLogin, email, userName, phoneNumber);
-            await publishEndpoint.Publish(updateUserMessage);
-
-            return OperationResult.Ok();
+            return !result ? OperationResult.Fail("Can not update Register") : OperationResult.Ok();
         });
     public async Task<OperationResult> DeleteUser(string login, string reason) =>
         await HandleDatabaseOperation(async () =>

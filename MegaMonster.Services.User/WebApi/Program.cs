@@ -100,6 +100,7 @@ builder.Services.AddMassTransit(busConfiguration =>
     busConfiguration.AddConsumer<UserEmailConsumer>();
     busConfiguration.AddConsumer<UserConfirmConsumer>();
     busConfiguration.AddConsumer<UserBanRollBackConsumer>();
+    busConfiguration.AddConsumer<UserEditInfoRollBackConsumer>();
     
     busConfiguration.UsingRabbitMq((context, configurator) =>
     {
@@ -130,6 +131,10 @@ builder.Services.AddMassTransit(busConfiguration =>
         configurator.ReceiveEndpoint("user-ban-rollback-queue", e =>
         {
             e.ConfigureConsumer<UserBanRollBackConsumer>(context);
+        });
+        configurator.ReceiveEndpoint("user-edit-rollback-queue", e =>
+        {
+            e.ConfigureConsumer<UserEditInfoRollBackConsumer>(context);
         });
     });
 });

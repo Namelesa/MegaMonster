@@ -148,6 +148,11 @@ public class AuthService(
         return await loginRepository.FindByEmail(email);
     }
     
+    public async Task<Users?> FindUserByLogin(string login)
+    {
+        return await loginRepository.FindUser(login);
+    }
+    
     private async Task<OperationResult> ValidateInfo(Users user)
     {
         var validationResult = await userValidator.ValidateAsync(user);
