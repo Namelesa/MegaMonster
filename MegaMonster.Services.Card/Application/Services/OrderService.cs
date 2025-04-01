@@ -15,22 +15,6 @@ public class OrderService(IOrderRepository orderRepository,
     IPublishEndpoint publishEndpoint,
     IRequestClient<UserEmailRequest> userRequestClient)
 {
-    public async Task<List<Guid>> GetOrdersIdByUserId(Guid userId)
-    {
-        var cacheKey = $"OrdersId_{userId}";
-        var cachedOrders = await redisService.GetAsync<List<Guid>>(cacheKey);
-        if (cachedOrders != null && cachedOrders.Count != 0)
-        {
-            return cachedOrders;
-        }
-
-        var orders = await orderRepository.GetOrdersIdByUserId(userId);
-
-        await redisService.SetAsync(cacheKey, orders, TimeSpan.FromMinutes(30));
-
-        return orders;
-    }
-
     public async Task<List<Order>> GetOrdersByUserId(Guid userId)
     {
         return await orderRepository.GetOrdersUserId(userId);
@@ -127,11 +111,11 @@ public class OrderService(IOrderRepository orderRepository,
         var orders = await orderRepository.GetOrdersUserId(userId);
         
         var filteredOrdersCard = orders
-            .Where(order => order.Status == Wc.CreatedStatus && order.PaymentType == Wc.PaymentTypeCard)
+            .Where(order => order is { Status: Wc.CreatedStatus, PaymentType: Wc.PaymentTypeCard })
             .ToList();
         
         var filteredOrdersCash = orders
-            .Where(order => order.Status == Wc.CreatedStatus && order.PaymentType == Wc.PaymentTypeCash)
+            .Where(order => order is { Status: Wc.CreatedStatus, PaymentType: Wc.PaymentTypeCash })
             .ToList();
         
         var paymentInfoList = new List<InfoPaymentModel>();

@@ -11,7 +11,6 @@ using Newtonsoft.Json;
 namespace MegaMonster.Services.Payment.WebApi.Controllers;
 
 [ApiController]
-[Authorize]
 [Route("api/payment")]
 public class PaymentController(PaymentService paymentService, IPublishEndpoint publishEndpoint, PaymentServiceRepository paymentServiceRepository) : ControllerBase
 {
@@ -64,16 +63,11 @@ public class PaymentController(PaymentService paymentService, IPublishEndpoint p
 
             var isSuccess = await paymentService.HandlePaymentResultAsync(requestDictionary);
 
-            if (isSuccess.isSuccess)
-            {
-                var publishCardModel = new InfoForCardPayment(Guid.Parse(isSuccess.orderId), isSuccess.transactionId);
-                await publishEndpoint.Publish(publishCardModel);
-                return Redirect("https://localhost/");
-            }
-            else
-            {
-                return BadRequest(new { message = "Can not update status" });
-            }
+            if (!isSuccess.isSuccess) return BadRequest(new { message = "Can not update status" });
+            
+            var publishCardModel = new InfoForCardPayment(Guid.Parse(isSuccess.orderId), isSuccess.transactionId);
+            await publishEndpoint.Publish(publishCardModel);
+            return Redirect("https://localhost/");
         }
         catch (Exception ex)
         {
