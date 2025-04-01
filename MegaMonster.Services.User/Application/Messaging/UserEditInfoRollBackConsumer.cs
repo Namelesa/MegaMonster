@@ -1,5 +1,5 @@
 using MassTransit;
-using MegaMonster.MessagingModels.RollBacks.User;
+using MegaMonster.MessagingModels.User.RollBacks;
 using MegaMonster.Services.User.Application.User;
 
 namespace MegaMonster.Services.User.Application.Messaging;

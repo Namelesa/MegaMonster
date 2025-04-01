@@ -1,6 +1,6 @@
 using MassTransit;
+using MegaMonster.MessagingModels.Card;
 using MegaMonster.Services.Card.Core.Models;
-using MegaMonster.MessagingModels.InfoCard;
 using MegaMonster.Services.Card.Application.Order;
 using MegaMonster.Services.Card.Core.OrderDetail;
 

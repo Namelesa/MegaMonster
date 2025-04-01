@@ -1,12 +1,13 @@
 using System.Text;
 using MassTransit;
+using MegaMonster.MessagingModels.User.GetInfo;
+using MegaMonster.MessagingModels.User.Notification;
 using MegaMonster.Services.Auth.Application.Messaging;
 using MegaMonster.Services.Auth.Core.Interfaces;
 using MegaMonster.Services.Auth.Infrastructure.JWT;
 using MegaMonster.Services.Auth.Infrastructure.MessageBroker;
 using MegaMonster.Services.Auth.Persistence.Data;
 using MegaMonster.Services.Auth.Persistence.Repositories;
-using MegaMonster.MessagingModels.UserInformation;
 using MegaMonster.Services.Auth.Application.User;
 using MegaMonster.Services.Auth.Core.User;
 using MegaMonster.Services.Auth.Persistence.Data.DbInitializer;

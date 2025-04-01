@@ -1,5 +1,5 @@
 using MassTransit;
-using MegaMonster.MessagingModels.InfoCard;
+using MegaMonster.MessagingModels.Card;
 using MegaMonster.Services.Favors.Core.Enums;
 using MegaMonster.Services.Favors.Core.Interfaces;
 using MegaMonster.Services.Favors.Core.Models;

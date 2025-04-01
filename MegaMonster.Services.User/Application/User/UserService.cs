@@ -1,7 +1,9 @@
 using MassTransit;
-using MegaMonster.MessagingModels.EditUserMessage;
-using MegaMonster.MessagingModels.UserAdding;
-using MegaMonster.MessagingModels.UserNotification;
+using MegaMonster.MessagingModels.User;
+using MegaMonster.MessagingModels.User.AddAdmin;
+using MegaMonster.MessagingModels.User.Edit;
+using MegaMonster.MessagingModels.User.Notification;
+using MegaMonster.MessagingModels.User.Notification.Ban;
 using MegaMonster.Services.User.Core.User;
 using MegaMonster.Services.User.Infrastructure.Redis;
 

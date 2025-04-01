@@ -1,5 +1,7 @@
 using MassTransit;
-using MegaMonster.MessagingModels.UserInformation;
+using MegaMonster.MessagingModels.User.GetInfo;
+using MegaMonster.MessagingModels.User.Notification;
+using MegaMonster.MessagingModels.User.Tickets;
 using MegaMonster.Services.User.Application.User;
 
 namespace MegaMonster.Services.User.Application.Messaging;

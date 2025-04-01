@@ -1,7 +1,9 @@
 using MassTransit;
-using MegaMonster.MessagingModels.InfoPayment;
-using MegaMonster.MessagingModels.InfoPayment.CashPaymentModels;
-using MegaMonster.MessagingModels.UserInformation.UserEmail;
+using MegaMonster.MessagingModels.Bill;
+using MegaMonster.MessagingModels.Payment.Card;
+using MegaMonster.MessagingModels.Payment.Cash;
+using MegaMonster.MessagingModels.User.GetInfo;
+using MegaMonster.MessagingModels.User.Notification;
 using MegaMonster.Services.Card.Core;
 using MegaMonster.Services.Card.Core.Order;
 using MegaMonster.Services.Card.Infrastructure.Redis;

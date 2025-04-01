@@ -1,5 +1,5 @@
 using MassTransit;
-using MegaMonster.MessagingModels.InfoPayment;
+using MegaMonster.MessagingModels.Payment.Card;
 using MegaMonster.Services.Card.Application.Order;
 
 namespace MegaMonster.Services.Card.Application.Messaging;

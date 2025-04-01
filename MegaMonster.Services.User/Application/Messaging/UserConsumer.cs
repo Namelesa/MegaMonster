@@ -1,6 +1,7 @@
 using MassTransit;
-using MegaMonster.MessagingModels.RollBacks.User;
-using MegaMonster.MessagingModels.UserAdding;
+using MegaMonster.MessagingModels.User;
+using MegaMonster.MessagingModels.User.AddUser;
+using MegaMonster.MessagingModels.User.RollBacks;
 using MegaMonster.Services.User.Application.Role;
 using MegaMonster.Services.User.Application.User;
 using MegaMonster.Services.User.Core.User;

@@ -1,6 +1,9 @@
 using MassTransit;
-using MegaMonster.MessagingModels.UserAdding;
-using MegaMonster.MessagingModels.UserInformation;
+using MegaMonster.MessagingModels.User;
+using MegaMonster.MessagingModels.User.AddUser;
+using MegaMonster.MessagingModels.User.GetInfo;
+using MegaMonster.MessagingModels.User.Notification;
+using MegaMonster.MessagingModels.User.Tickets;
 using MegaMonster.Services.Auth.Core.User;
 using MegaMonster.Services.Auth.Infrastructure.JWT;
 
