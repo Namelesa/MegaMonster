@@ -1,5 +1,4 @@
-using MegaMonster.Services.Payment.Core.Interfaces;
-using MegaMonster.Services.Payment.Core.Models;
+using MegaMonster.Services.Payment.Core.Payment;
 using MegaMonster.Services.Payment.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 

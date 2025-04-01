@@ -1,4 +1,4 @@
-using MegaMonster.Services.Notification.Core.Models;
+using MegaMonster.Services.Notification.Core.User;
 
 namespace MegaMonster.Services.Notification.Core.Interfaces;
 

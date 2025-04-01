@@ -1,4 +1,4 @@
-using MegaMonster.Services.User.Core.Models;
+using MegaMonster.Services.User.Core.User;
 using Microsoft.EntityFrameworkCore;
 
 namespace MegaMonster.Services.User.Persistence.Data;
@@ -8,7 +8,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Users> Users { get; set; }
     
     public DbSet<Users> BannedUsers { get; set; }
-    public DbSet<Role> Roles { get; set; }
+    public DbSet<Core.Role.Role> Roles { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -16,7 +16,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Users>()
             .HasIndex(u => u.Login)
             .IsUnique();
-        modelBuilder.Entity<Role>()
+        modelBuilder.Entity<Core.Role.Role>()
             .HasIndex(r => r.RoleName)
             .IsUnique();
     }

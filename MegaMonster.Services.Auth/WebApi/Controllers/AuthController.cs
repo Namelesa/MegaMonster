@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using MegaMonster.Services.Auth.Application.Services;
+using MegaMonster.Services.Auth.Application.User;
 using MegaMonster.Services.Auth.WebApi.Dto_s;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

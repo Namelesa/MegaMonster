@@ -30,10 +30,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Application\Messaging\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\MegaMonster.MessagingModels\MegaMonster.MessagingModels.csproj" />
     </ItemGroup>
 

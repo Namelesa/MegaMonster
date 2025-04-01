@@ -1,12 +1,12 @@
 using System.Text;
 using MassTransit;
-using MegaMonster.Services.Payment.Application.Services;
-using MegaMonster.Services.Payment.Core.Interfaces;
+using MegaMonster.Services.Payment.Application.Messaging;
+using MegaMonster.Services.Payment.Application.Payment;
+using MegaMonster.Services.Payment.Core.Payment;
 using MegaMonster.Services.Payment.Infrastructure.MessageBroker;
-using MegaMonster.Services.Payment.Infrastructure.Messaging;
-using MegaMonster.Services.Payment.Infrastructure.Service;
+using MegaMonster.Services.Payment.Infrastructure.Paymenet;
 using MegaMonster.Services.Payment.Persistence.Data;
-using MegaMonster.Services.Payment.Persistence.DbInitializer;
+using MegaMonster.Services.Payment.Persistence.Data.DbInitializer;
 using MegaMonster.Services.Payment.Persistence.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;

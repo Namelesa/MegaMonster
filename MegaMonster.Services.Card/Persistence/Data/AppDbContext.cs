@@ -1,4 +1,6 @@
 using MegaMonster.Services.Card.Core.Models;
+using MegaMonster.Services.Card.Core.Order;
+using MegaMonster.Services.Card.Core.OrderDetail;
 using Microsoft.EntityFrameworkCore;
 
 namespace MegaMonster.Services.Card.Persistence.Data;

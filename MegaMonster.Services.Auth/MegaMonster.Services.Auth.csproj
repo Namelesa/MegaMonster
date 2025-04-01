@@ -32,10 +32,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Core\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\MegaMonster.MessagingModels\MegaMonster.MessagingModels.csproj" />
     </ItemGroup>
 

@@ -1,7 +1,7 @@
 using MassTransit;
 using MegaMonster.MessagingModels.RollBacks.User;
-using MegaMonster.Services.Auth.Application.Services;
 using MegaMonster.MessagingModels.UserNotification;
+using MegaMonster.Services.Auth.Application.User;
 
 namespace MegaMonster.Services.Auth.Application.Messaging;
 

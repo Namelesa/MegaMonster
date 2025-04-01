@@ -1,0 +1,83 @@
+using MegaMonster.Services.User.Core.User;
+using MegaMonster.Services.User.Persistence.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace MegaMonster.Services.User.Persistence.User;
+
+public class UserRepository(AppDbContext db, ILogger<UserRepository> logger) : IUserRepository
+{
+    public async Task<IEnumerable<Users>> GetAllAsync()
+    {
+        return await db.Users.ToListAsync();
+    }
+    
+    public async Task<bool> AddAsync(Users user)
+    {
+        try
+        {
+            await db.Users.AddAsync(user);
+            await db.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error adding user: {Register}", user);
+            return false;
+        }
+    }
+
+    public async Task<bool> EditAsync(Users user)
+    {
+        try
+        {
+            db.Users.Update(user);
+            await db.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error updating user: {Register}", user);
+            return false;
+        }
+    }
+    
+    public async Task<bool> DeleteAsync(Users user)
+    {
+        try
+        {
+            db.Users.Remove(user);
+            await db.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error deleting user: {Register}", user);
+            return false;
+        }
+    }
+
+    public async Task<Users?> GetUserByLoginAsync(string login)
+    {
+        return await db.Users.FirstOrDefaultAsync(u => u.Login == login);
+    }
+    
+    public async Task<Users?> GetUserByIdAsync(Guid userId)
+    {
+        return await db.Users.FirstOrDefaultAsync(u=> u.Id == userId.ToString());
+    }
+
+    public async Task<bool> ConfirmEmailAsync(Users user)
+    {
+        try
+        {
+            user.EmailConfirmed = true;
+            await db.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return false;
+        }
+    }
+}

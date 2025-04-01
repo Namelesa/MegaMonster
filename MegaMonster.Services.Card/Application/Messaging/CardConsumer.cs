@@ -1,7 +1,8 @@
 using MassTransit;
-using MegaMonster.Services.Card.Application.Services;
 using MegaMonster.Services.Card.Core.Models;
 using MegaMonster.MessagingModels.InfoCard;
+using MegaMonster.Services.Card.Application.Order;
+using MegaMonster.Services.Card.Core.OrderDetail;
 
 namespace MegaMonster.Services.Card.Application.Messaging;
 
@@ -15,7 +16,7 @@ public class CardConsumer(OrderService orderService) : IConsumer<CardInfoModel>
             TicketId = ticket.TicketId,
         }).ToList();
 
-        var order = new Order()
+        var order = new Core.Order.Order()
         {
             UserId = card.UserId,
             UserName = card.UserName,

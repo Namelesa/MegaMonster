@@ -1,6 +1,5 @@
 using System.Diagnostics;
-using MegaMonster.Services.Auth.Core.Interfaces;
-using MegaMonster.Services.Auth.Core.Models;
+using MegaMonster.Services.Auth.Core.User;
 using MegaMonster.Services.Auth.Persistence.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

@@ -1,5 +1,5 @@
 using MegaMonster.Services.Notification.Core.Interfaces;
-using MegaMonster.Services.Notification.Core.Models;
+using MegaMonster.Services.Notification.Core.User;
 using MegaMonster.Services.Notification.Infrastructure.MailJet;
 using MegaMonster.Services.Notification.Infrastructure.Reader;
 using Microsoft.AspNetCore.Identity.UI.Services;

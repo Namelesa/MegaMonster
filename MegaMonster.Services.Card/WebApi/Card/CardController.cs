@@ -1,0 +1,138 @@
+using System.ComponentModel.DataAnnotations;
+using MegaMonster.Services.Card.Application.Order;
+using MegaMonster.Services.Card.Core;
+using MegaMonster.Services.Card.WebApi.Order;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace MegaMonster.Services.Card.WebApi.Card;
+
+[ApiController]
+[Route("api/card")]
+public class CardController(OrderService orderService, OrderDetailsService orderDetailsService) : ControllerBase
+{
+    // Get Requests //
+    [Authorize]
+    [HttpGet("card")]
+    public async Task<IActionResult> GetCard(Guid userId)
+    {
+        var allOrders = await orderService.GetOrdersByUserId(userId);
+        var unpaidOrders = allOrders.Where(o => o.Status != Wc.PayedStatus).ToList();
+    
+        if (!unpaidOrders.Any())
+        {
+            return NotFound("No unpaid orders found for this user.");
+        }
+
+        var orderIds = unpaidOrders.Select(o => o.Id).ToList();
+        var orderDetails = await orderDetailsService.GetOrderDetails(orderIds);
+
+        return Ok(new Card
+        {
+            OrderCard = unpaidOrders,
+            OrderDetailsCard = orderDetails
+        });
+    }
+    
+    [Authorize]
+    [HttpGet("history")]
+    public async Task<IActionResult> GetHistory(Guid userId)
+    {
+        var history = await orderService.GetOrderHistoryByUserId(userId);
+        return Ok(history);
+    }
+    
+    // Post Requests //
+    [Authorize]
+    [HttpPost("add")]
+    public async Task<IActionResult> AddToCard([FromBody] OrderDto orderDto)
+    {
+        
+        if (string.IsNullOrEmpty(orderDto.UserId.ToString()) || string.IsNullOrEmpty(orderDto.UserName))
+        {
+            return BadRequest("UserId and UserName are required.");
+        }
+
+        if (!orderDto.OrderDetails.Any())
+        {
+            return BadRequest("At least one order detail is required.");
+        }
+
+        if (orderDto.OrderDetails.Count > 10)
+        {
+            return BadRequest("You cannot add more than 10 order details.");
+        }
+
+        var order = new Core.Order.Order
+        {
+            UserId = orderDto.UserId,
+            UserName = orderDto.UserName,
+            Sum = orderDto.Sum,
+        };
+
+        order.OrderDetails = orderDto.OrderDetails
+            .Select(detailsDto => new Core.OrderDetail.OrderDetails
+            {
+                TicketId = detailsDto.TicketId,
+                Order = order
+            })
+            .ToList();
+
+        var result = await orderService.AddOrder(order);
+
+        return result.Success 
+            ? Ok(new { message = "Order successfully added" }) 
+            : BadRequest(result.Message);
+    }
+    
+    // Checkout
+    [Authorize]
+    [HttpPost("checkout")]
+    public async Task<IActionResult> Checkout([FromBody, Required] Guid userId)
+    {
+        var result = await orderService.CardCheckout(userId);
+        return result.Success ? Ok("Push card to payment") : BadRequest("Can not publish card");
+    }
+    
+    // Put Requests //
+    [Authorize]
+    [HttpPut("edit")]
+    public async Task<IActionResult> EditCard([Required] Guid orderId, [Required] Guid orderDetailsId, [FromBody] OrderEditDto orderEditDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        var order = await orderService.GetAllOrder(orderId);
+
+        if (order == null)
+        {
+            return NotFound($"Order with ID {orderId} not found.");
+        }
+        
+        order.Sum = orderEditDto.Sum;
+        order.Bill = orderEditDto.Bill;
+
+        var orderDetails = order.OrderDetails.FirstOrDefault(od => od.Id == orderDetailsId);
+        if (orderDetails == null)
+        {
+            return NotFound("OrderDetails with ID not found for this order.");
+        }
+        
+        orderDetails.TicketId = orderEditDto.TicketId;
+        var result = await orderService.UpdateOrder(order);
+        return result.Success ? Ok("Order updated") : BadRequest(result.Message);
+    }
+    
+    // Delete Requests //
+    [Authorize]
+    [HttpDelete("delete")]
+    public async Task<IActionResult> DeleteCard([Required] Guid orderId)
+    {
+        var result = await orderService.DeleteById(orderId);
+        return result.Success ? Ok("Order deleted") : BadRequest(result.Message);
+        //send delete to ticket
+    }
+    
+}

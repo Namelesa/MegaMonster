@@ -1,4 +1,4 @@
-using MegaMonster.Services.Auth.Core.Models;
+using MegaMonster.Services.Auth.Core.User;
 using Microsoft.EntityFrameworkCore;
 
 namespace MegaMonster.Services.Auth.Persistence.Data;
