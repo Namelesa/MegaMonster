@@ -75,7 +75,11 @@ public class TicketsService(
 
             purchasedTickets.Add(ticket);
 
-            BackgroundJob.Schedule(() => Console.WriteLine($"Ticket with id = {ticket.Id} will be deleted at {ticket.DateTimeEnd}"), TimeSpan.FromSeconds(10));
+            if (ticket is not { DateTimeEnd: not null, DateTimeStart: not null }) continue;
+            var delay = ticket.DateTimeEnd.Value - ticket.DateTimeStart.Value;
+                
+            BackgroundJob.Schedule(() => Console.WriteLine($"Ticket with id = {ticket.Id} will be deleted with delay {delay}"), TimeSpan.FromSeconds(10));
+            BackgroundJob.Schedule(() => DeleteExpiredTicket(ticket.Id), delay);
         }
 
         if (purchasedTickets.Count <= 0)
@@ -127,6 +131,24 @@ public class TicketsService(
         currentConfig.DurationInHours = durationInHours;
 
         return await ProcessConfigurationChange(() => ticketConfigurationRepository.EditAsync(currentConfig), userType, newUserType);
+    }
+
+    public async Task DeleteExpiredTicket(int ticketId)
+    {
+        try
+        {
+            var ticket = await ticketRepository.GetTicketById(ticketId);
+            
+            var result = await ticketRepository.DeleteAsync(ticket);
+
+            Console.WriteLine(result
+                ? $"Ticket with id = {ticketId} was successfully deleted at {DateTime.UtcNow}"
+                : $"Failed to delete ticket with id = {ticketId} at {DateTime.UtcNow}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting ticket with id = {ticketId}: {ex.Message}");
+        }
     }
     
     private async Task<T> GetOrSetCache<T>(string cacheKey, Func<Task<T>> fetchFunction)

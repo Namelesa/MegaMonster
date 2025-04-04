@@ -1,4 +1,4 @@
-namespace MegaMonster.Services.Favors.Core.Interfaces;
+namespace MegaMonster.Services.Favors.Core.BaseModel;
 
 public interface IRepository<T>
 {

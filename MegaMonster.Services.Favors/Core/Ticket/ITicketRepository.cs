@@ -1,4 +1,4 @@
-using MegaMonster.Services.Favors.Core.Interfaces;
+using MegaMonster.Services.Favors.Core.BaseModel;
 
 namespace MegaMonster.Services.Favors.Core.Ticket;
 

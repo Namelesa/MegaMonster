@@ -1,4 +1,3 @@
-using MegaMonster.Services.Favors.Core.Interfaces;
 using MegaMonster.Services.Favors.Core.News;
 using MegaMonster.Services.Favors.Infrastructure.Redis;
 

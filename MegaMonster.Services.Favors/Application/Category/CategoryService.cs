@@ -1,5 +1,4 @@
 using MegaMonster.Services.Favors.Core.Category;
-using MegaMonster.Services.Favors.Core.Interfaces;
 using MegaMonster.Services.Favors.Infrastructure.Redis;
 
 namespace MegaMonster.Services.Favors.Application.Category;
