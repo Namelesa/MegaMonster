@@ -1,9 +1,7 @@
-using MegaMonster.Services.Favors.Core.Models;
-
 namespace MegaMonster.Services.Favors.Core.News;
 
 public class News(string type, string name, string description, string image, string link)
-    : BaseModel
+    : BaseModel.BaseModel
 {
     public string Type { get; set; } = type;
     public string Name { get; set; } = name;

@@ -3,7 +3,6 @@ using MegaMonster.MessagingModels.Bill;
 using MegaMonster.MessagingModels.Payment.Card;
 using MegaMonster.MessagingModels.Payment.Cash;
 using MegaMonster.MessagingModels.User.GetInfo;
-using MegaMonster.MessagingModels.User.Notification;
 using MegaMonster.Services.Card.Core;
 using MegaMonster.Services.Card.Core.Order;
 using MegaMonster.Services.Card.Infrastructure.Redis;
@@ -45,14 +44,11 @@ public class OrderService(IOrderRepository orderRepository,
     public async Task<OperationResult<string>> AddOrder(Core.Order.Order order)
     {
         var result = await orderRepository.AddAsync(order);
-        if (result)
-        {
-            var cacheKey = $"Orders_{order.UserId}";
-            await redisService.RemoveAsync(cacheKey);
+        if (!result) return OperationResult<string>.Fail("Error with adding order");
+        var cacheKey = $"Orders_{order.UserId}";
+        await redisService.RemoveAsync(cacheKey);
 
-            return OperationResult<string>.Ok("Add successful");
-        }
-        return OperationResult<string>.Fail("Error with adding order");
+        return OperationResult<string>.Ok("Add successful");
     }
     
     public async Task<Core.Order.Order?> GetAllOrder(Guid orderId)
@@ -64,31 +60,31 @@ public class OrderService(IOrderRepository orderRepository,
     public async Task<OperationResult<string>> UpdateOrder(Core.Order.Order order)
     {
         var result = await orderRepository.EditAsync(order);
-        if (result)
-        {
-            var cacheKey = $"Orders_{order.UserId}";
-            await redisService.RemoveAsync(cacheKey);
+        if (!result) return OperationResult<string>.Fail("Cannot update this order");
+        var cacheKey = $"Orders_{order.UserId}";
+        await redisService.RemoveAsync(cacheKey);
 
-            return OperationResult<string>.Ok("Successful updated");
-        }
-        return OperationResult<string>.Fail("Cannot update this order");
+        return OperationResult<string>.Ok("Successful updated");
     }
     
-    public async Task<OperationResult<Core.Order.Order>> UpdateOrderStatus(Guid orderId, string bill)
+    public async Task<OperationResult<Core.Order.Order>> UpdateOrderStatus(Guid orderId, string? bill, string status)
     {
         var order = await orderRepository.GetAllOrderInfo(orderId);
-    
-        if (order == null)
+        
+        switch (order)
         {
-            return OperationResult<Core.Order.Order>.Fail($"Order with ID {orderId} not found.");
+            case null:
+                return OperationResult<Core.Order.Order>.Fail($"Order with ID {orderId} not found.");
+            case { Status: Wc.CreatedStatus, Bill: null } when status == Wc.PayedStatus:
+                Console.WriteLine("Payed");
+                order.Status = Wc.PayedStatus;
+                break;
+            case { Status: Wc.PayedStatus, Bill: not null } when status == Wc.CanceledStatus:
+                Console.WriteLine("Canceled");
+                order.Status = Wc.CanceledStatus;
+                break;
         }
         
-        if (order.Status == Wc.PayedStatus)
-        {
-            return OperationResult<Core.Order.Order>.Ok(order);
-        }
-
-        order.Status = Wc.PayedStatus;
         order.Bill = bill;
         var result = await orderRepository.EditAsync(order);
 
@@ -118,19 +114,7 @@ public class OrderService(IOrderRepository orderRepository,
             .Where(order => order is { Status: Wc.CreatedStatus, PaymentType: Wc.PaymentTypeCash })
             .ToList();
         
-        var paymentInfoList = new List<InfoPaymentModel>();
-
-        foreach (var order in filteredOrdersCard)
-        {
-            var infoForPayment = new InfoPaymentModel(
-                orderId: order.Id, 
-                count: order.OrderDetails.Count,
-                userName: order.UserName,
-                sum: order.Sum
-            );
-
-            paymentInfoList.Add(infoForPayment);
-        }
+        var paymentInfoList = filteredOrdersCard.Select(order => new InfoPaymentModel(orderId: order.Id, count: order.OrderDetails.Count, userName: order.UserName, sum: order.Sum)).ToList();
 
         var paymentInfo = new InfoPaymentList()
         {
@@ -154,30 +138,16 @@ public class OrderService(IOrderRepository orderRepository,
             await publishEndpoint.Publish(notifyUserBill);
         }
         
-        var paymentInfoCashList = new List<InfoPaymentCash>();
-
-        foreach (var order in filteredOrdersCash)
-        {
-            var infoForPayment = new InfoPaymentCash(
-                orderId: order.Id, 
-                count: order.OrderDetails.Count,
-                userName: order.UserName,
-                sum: order.Sum
-            );
-
-            paymentInfoCashList.Add(infoForPayment);
-        }
+        var paymentInfoCashList = filteredOrdersCash.Select(order => new InfoPaymentCash(orderId: order.Id, count: order.OrderDetails.Count, userName: order.UserName, sum: order.Sum)).ToList();
 
         var paymentInfoCash = new InfoPaymentListCash()
         {
             Payments = paymentInfoCashList
         };
-        if (paymentInfoCash.Payments.Count > 0)
-        {
-            Console.WriteLine($"Processing cash payments: {paymentInfoCash.Payments.Count}");
-            await publishEndpoint.Publish(paymentInfoCash);
-        }
-
+        if (paymentInfoCash.Payments.Count <= 0) return OperationResult<string>.Ok("");
+        Console.WriteLine($"Processing cash payments: {paymentInfoCash.Payments.Count}");
+        
+        await publishEndpoint.Publish(paymentInfoCash);
         
         return OperationResult<string>.Ok("");
     }

@@ -5,7 +5,7 @@ using MegaMonster.Services.Payment.Application.Payment;
 using MegaMonster.Services.Payment.Core.Payment;
 using Newtonsoft.Json;
 
-namespace MegaMonster.Services.Payment.Infrastructure.Paymenet;
+namespace MegaMonster.Services.Payment.Infrastructure.Payment;
 
 public class PaymentService(string publicKey, string privateKey, PaymentServiceRepository paymentServiceRepository)
 {

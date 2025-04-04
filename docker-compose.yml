@@ -64,6 +64,19 @@
     networks:
       - app_network
   
+  postgres5:
+    image: postgres:latest
+    container_name: hangfire_db
+    restart: always
+    environment:
+      POSTGRES_DB: hangfire
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5530:5432"
+    networks:
+      - app_network
+  
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq

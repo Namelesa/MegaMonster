@@ -1,7 +1,8 @@
 using MassTransit;
+using MegaMonster.MessagingModels.Card;
 using MegaMonster.MessagingModels.Payment.Card;
 using MegaMonster.Services.Payment.Application.Payment;
-using MegaMonster.Services.Payment.Infrastructure.Paymenet;
+using MegaMonster.Services.Payment.Infrastructure.Payment;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -45,6 +46,11 @@ public class PaymentController(PaymentService paymentService, IPublishEndpoint p
             return BadRequest("Invalid orderId");
 
         var result = await paymentService.CancelPaymentAsync(request.OrderId);
+        if (!result) return BadRequest(new { message = "Can not canceled payment" });
+        
+        var publishCardModel = new CardCanceledStatus(request.OrderId, "Canceled");
+        await publishEndpoint.Publish(publishCardModel);
+        
         return result ? Ok("Cancel payment") : BadRequest("Errors");
     }
     

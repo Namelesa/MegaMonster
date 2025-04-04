@@ -1,4 +1,3 @@
-using MegaMonster.Services.Favors.Core.TicketConfiguration;
 using Microsoft.EntityFrameworkCore;
 
 namespace MegaMonster.Services.Favors.Persistence.Data.DbInitializer;

@@ -1,8 +1,7 @@
+using Hangfire;
 using MassTransit;
 using MegaMonster.MessagingModels.Card;
 using MegaMonster.Services.Favors.Core.Enums;
-using MegaMonster.Services.Favors.Core.Interfaces;
-using MegaMonster.Services.Favors.Core.Models;
 using MegaMonster.Services.Favors.Core.Ticket;
 using MegaMonster.Services.Favors.Core.TicketConfiguration;
 using MegaMonster.Services.Favors.Infrastructure.Redis;
@@ -75,15 +74,19 @@ public class TicketsService(
             }
 
             purchasedTickets.Add(ticket);
+
+            BackgroundJob.Schedule(() => Console.WriteLine($"Ticket with id = {ticket.Id} will be deleted at {ticket.DateTimeEnd}"), TimeSpan.FromSeconds(10));
         }
 
-        if (purchasedTickets.Count > 0)
-        {
-            double totalAmount = purchasedTickets.Sum(t => t.Price);
-            var ticketDetails = purchasedTickets.Select(t => new CardDetailsModel(t.Id)).ToList();
-            var card = new CardInfoModel(userId, userName, totalAmount, ticketDetails, validPaymentType.ToString());
-            await publishEndpoint.Publish(card);
-        }
+        if (purchasedTickets.Count <= 0)
+            return failedTickets.Count > 0
+                ? ResultOperation.Fail(string.Join("; ", failedTickets))
+                : ResultOperation.Ok();
+        
+        var totalAmount = purchasedTickets.Sum(t => t.Price);
+        var ticketDetails = purchasedTickets.Select(t => new CardDetailsModel(t.Id)).ToList();
+        var card = new CardInfoModel(userId, userName, totalAmount, ticketDetails, validPaymentType.ToString());
+        await publishEndpoint.Publish(card);
 
         return failedTickets.Count > 0 
             ? ResultOperation.Fail(string.Join("; ", failedTickets)) 

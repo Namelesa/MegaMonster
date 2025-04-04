@@ -4,7 +4,7 @@ using MegaMonster.Services.Payment.Application.Messaging;
 using MegaMonster.Services.Payment.Application.Payment;
 using MegaMonster.Services.Payment.Core.Payment;
 using MegaMonster.Services.Payment.Infrastructure.MessageBroker;
-using MegaMonster.Services.Payment.Infrastructure.Paymenet;
+using MegaMonster.Services.Payment.Infrastructure.Payment;
 using MegaMonster.Services.Payment.Persistence.Data;
 using MegaMonster.Services.Payment.Persistence.Data.DbInitializer;
 using MegaMonster.Services.Payment.Persistence.Repositories;

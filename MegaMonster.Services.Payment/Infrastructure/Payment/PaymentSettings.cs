@@ -1,4 +1,4 @@
-namespace MegaMonster.Services.Payment.Infrastructure.Paymenet
+namespace MegaMonster.Services.Payment.Infrastructure.Payment
 {
     public static class PaymentSettings
     {

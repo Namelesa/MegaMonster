@@ -1,11 +1,12 @@
 using System.Text;
+using Hangfire;
+using Hangfire.PostgreSql;
 using MassTransit;
 using MegaMonster.Services.Favors.Application.Category;
 using MegaMonster.Services.Favors.Application.News;
 using MegaMonster.Services.Favors.Application.Ride;
 using MegaMonster.Services.Favors.Application.Ticket;
 using MegaMonster.Services.Favors.Core.Category;
-using MegaMonster.Services.Favors.Core.Interfaces;
 using MegaMonster.Services.Favors.Core.News;
 using MegaMonster.Services.Favors.Core.Ride;
 using MegaMonster.Services.Favors.Core.Ticket;
@@ -29,6 +30,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddHangfire(config => 
+{
+    config.UsePostgreSqlStorage(builder.Configuration.GetConnectionString("HangfireConnection"));
+});
+builder.Services.AddHangfireServer();
 
 builder.Services.AddAuthentication(options =>
     {

@@ -1,9 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using MegaMonster.Services.Favors.Core.Models;
 
 namespace MegaMonster.Services.Favors.Core.Category;
 
-public class Category(string name) : BaseModel
+public class Category(string name) : BaseModel.BaseModel
 {
     [Required]
     public string Name { get; set; } = name;

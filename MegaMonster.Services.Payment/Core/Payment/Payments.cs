@@ -1,5 +1,5 @@
 using MegaMonster.Services.Payment.Infrastructure;
-using MegaMonster.Services.Payment.Infrastructure.Paymenet;
+using MegaMonster.Services.Payment.Infrastructure.Payment;
 using Newtonsoft.Json;
 
 namespace MegaMonster.Services.Payment.Core.Payment;

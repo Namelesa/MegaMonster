@@ -1,5 +1,4 @@
 using MegaMonster.Services.Favors.Core.Category;
-using MegaMonster.Services.Favors.Core.Models;
 using MegaMonster.Services.Favors.Core.News;
 using MegaMonster.Services.Favors.Core.Ride;
 using MegaMonster.Services.Favors.Core.Ticket;

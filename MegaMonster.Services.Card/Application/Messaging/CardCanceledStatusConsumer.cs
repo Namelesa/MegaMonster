@@ -1,13 +1,13 @@
 using MassTransit;
-using MegaMonster.MessagingModels.Payment.Card;
+using MegaMonster.MessagingModels.Card;
 using MegaMonster.Services.Card.Application.Order;
 using Wc = MegaMonster.Services.Card.Core.Wc;
 
 namespace MegaMonster.Services.Card.Application.Messaging;
 
-public class CardInfoStatusConsumer(OrderService orderService, ILogger<CardInfoStatusConsumer> logger) : IConsumer<InfoForCardPayment>
+public class CardCanceledStatusConsumer(OrderService orderService, ILogger<CardCanceledStatusConsumer> logger) : IConsumer<CardCanceledStatus>
 {
-    public async Task Consume(ConsumeContext<InfoForCardPayment> context)
+    public async Task Consume(ConsumeContext<CardCanceledStatus> context)
     {
         var order = context.Message;
         
@@ -15,7 +15,7 @@ public class CardInfoStatusConsumer(OrderService orderService, ILogger<CardInfoS
         {
             logger.LogInformation($"Received payment update for OrderId: {order.OrderId}");
 
-            var result = await orderService.UpdateOrderStatus(order.OrderId, order.Bill, Wc.PayedStatus);
+            var result = await orderService.UpdateOrderStatus(order.OrderId, null, Wc.CanceledStatus);
 
             if (result.Success)
             {

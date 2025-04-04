@@ -1,8 +1,6 @@
-using MegaMonster.Services.Favors.Core.Models;
-
 namespace MegaMonster.Services.Favors.Core.Ticket;
 
-public class Ticket : BaseModel
+public class Ticket : BaseModel.BaseModel
 {
     public string? UserName { get; set; }
     public Guid UserId { get; set; }
@@ -10,7 +8,6 @@ public class Ticket : BaseModel
     public double Price { get; set; }
     public DateTime? DateTimeStart { get; set; }
     public DateTime? DateTimeEnd { get; set; }
-    
     public string PaymentType { get; set; }
     
     public Ticket(string userName, string userType, DateTime startTime, TicketConfiguration.TicketConfiguration config, Guid userId)

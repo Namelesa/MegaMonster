@@ -66,6 +66,7 @@ builder.Services.AddMassTransit(busConfiguration =>
 {
     busConfiguration.AddConsumer<CardConsumer>();
     busConfiguration.AddConsumer<CardInfoStatusConsumer>();
+    busConfiguration.AddConsumer<CardCanceledStatusConsumer>();
     busConfiguration.UsingRabbitMq((context, configurator) =>
     {
         MessageBrokerSettings settings = context.GetRequiredService<MessageBrokerSettings>();
@@ -82,6 +83,10 @@ builder.Services.AddMassTransit(busConfiguration =>
         configurator.ReceiveEndpoint("payment-info-service-queue", e =>
         {
             e.ConfigureConsumer<CardInfoStatusConsumer>(context);
+        });
+        configurator.ReceiveEndpoint("payment-canceled-service-queue", e =>
+        {
+            e.ConfigureConsumer<CardCanceledStatusConsumer>(context);
         });
     });
 });
