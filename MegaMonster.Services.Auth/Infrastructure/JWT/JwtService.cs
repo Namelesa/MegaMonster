@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace MegaMonster.Services.Auth.Infrastructure.JWT;
 
-public class JwtService(IConfiguration config, ILogger<JwtService> logger)
+public class JwtService(IConfiguration config, ILogger<JwtService> logger) : IJwtService
 {
     private readonly IConfiguration _config = config ?? throw new ArgumentNullException(nameof(config));
     private readonly ILogger<JwtService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));

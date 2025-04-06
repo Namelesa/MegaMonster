@@ -1,5 +1,5 @@
+using FluentValidation;
 using MassTransit;
-using MegaMonster.MessagingModels.User;
 using MegaMonster.MessagingModels.User.AddUser;
 using MegaMonster.MessagingModels.User.GetInfo;
 using MegaMonster.MessagingModels.User.Notification;
@@ -12,8 +12,8 @@ namespace MegaMonster.Services.Auth.Application.User;
 public class AuthService(
     IRegisterRepository registerRepository, 
     ILoginRepository loginRepository, 
-    JwtService jwtService, 
-    UserValidator userValidator,
+    IJwtService jwtService, 
+    IValidator<Users> userValidator,
     IPublishEndpoint publishEndpoint,
     IRequestClient<UserRequest> userRequestClient)
 {
@@ -26,7 +26,7 @@ public class AuthService(
         var checkUser = await loginRepository.FindUser(login);
         if (checkUser is { IsBan: true }) return OperationResult.Fail("user is baned");
         
-        Users user = new Users
+        var user = new Users
         {
             Email = email,
             UserName = userName,
@@ -45,14 +45,14 @@ public class AuthService(
         {
             user.Role = Wc.CustomerRole;
             var userMessage = new UserModelMessage(user.Login, user.UserName, user.Email, user.PasswordHash, user.PhoneNumber, user.Role);
-            bool result = await registerRepository.RegisterUser(user);
+            var result = await registerRepository.RegisterUser(user);
             await publishEndpoint.Publish(userMessage);
             return result ? OperationResult.Ok("Add new Customer") : OperationResult.Fail("Can not register user"); 
         }
         
         user.Role = Wc.AdminRole;
         
-        bool resultAddAdmin = await registerRepository.RegisterUser(user);
+        var resultAddAdmin = await registerRepository.RegisterUser(user);
         return resultAddAdmin ? OperationResult.Ok("Add new Admin") : OperationResult.Fail("Can not register admin user"); 
     }
     
@@ -99,11 +99,7 @@ public class AuthService(
     public async Task<OperationResult> BanUser(string email)
     {
         var result = await registerRepository.BanUser(email);
-        if (result == "Register not found")
-        {
-            return OperationResult.Fail(result);
-        }
-        return OperationResult.Ok(result);
+        return result == "Register not found" ? OperationResult.Fail(result) : OperationResult.Ok(result);
     }
     
     public async Task<OperationResult> DeleteUser(string login)
@@ -118,13 +114,10 @@ public class AuthService(
         if (user == null) return OperationResult.Fail("Register not found");
 
         var result = await registerRepository.ConfirmEmailAsync(user);
-        
-        if (result)
-        {
-            await publishEndpoint.Publish(new ConfirmEmailUser(user.Login));
-            return OperationResult.Ok("Email confirmed successfully");
-        }
-        return OperationResult.Fail("Invalid or expired token");
+
+        if (!result) return OperationResult.Fail("Invalid or expired token");
+        await publishEndpoint.Publish(new ConfirmEmailUser(user.Login));
+        return OperationResult.Ok("Email confirmed successfully");
     }
     
     public async Task<OperationResult> EditUser(string oldLogin, string userName, string email, string phoneNumber, string newLogin) 
@@ -156,11 +149,8 @@ public class AuthService(
     private async Task<OperationResult> ValidateInfo(Users user)
     {
         var validationResult = await userValidator.ValidateAsync(user);
-        if (validationResult.Errors.Any())
-        {
-            var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
-            return OperationResult.Fail(errors);
-        }
-        return OperationResult.Ok("");
+        if (validationResult.Errors.Count == 0) return OperationResult.Ok("");
+        var errors = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
+        return OperationResult.Fail(errors);
     }
 }

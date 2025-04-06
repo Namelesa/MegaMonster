@@ -1,9 +1,8 @@
 using System.Text;
+using FluentValidation;
 using MassTransit;
 using MegaMonster.MessagingModels.User.GetInfo;
-using MegaMonster.MessagingModels.User.Notification;
 using MegaMonster.Services.Auth.Application.Messaging;
-using MegaMonster.Services.Auth.Core.Interfaces;
 using MegaMonster.Services.Auth.Infrastructure.JWT;
 using MegaMonster.Services.Auth.Infrastructure.MessageBroker;
 using MegaMonster.Services.Auth.Persistence.Data;
@@ -55,13 +54,13 @@ builder.Services.AddAuthentication(options =>
     };
 });
 builder.Services.AddAuthorization();
-builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IRegisterRepository, RegisterRepository>();
 builder.Services.AddScoped<ILoginRepository, LoginRepository>();
 
 builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 
-builder.Services.AddScoped<UserValidator>();
+builder.Services.AddScoped<IValidator<Users>, UserValidator>();
 
 builder.Services.AddScoped<AuthService>();
 
