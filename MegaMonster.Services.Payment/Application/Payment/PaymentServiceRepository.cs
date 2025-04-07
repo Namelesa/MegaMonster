@@ -7,9 +7,7 @@ public class PaymentServiceRepository(IPaymentRepository paymentRepository)
     public async Task<OperationResult<Payments>> GetPaymentByOrderId(Guid orderId)
     {
         var payment = await paymentRepository.GetPaymentAsyncByOrderId(orderId);
-        if (payment == null) return OperationResult<Payments>.Fail("Not found payment for this order");
-
-        return OperationResult<Payments>.Ok(payment);
+        return payment == null ? OperationResult<Payments>.Fail("Not found payment for this order") : OperationResult<Payments>.Ok(payment);
     }
     
     public async Task<OperationResult<string>> AddPayment(Payments payment)

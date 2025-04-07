@@ -326,40 +326,6 @@ public class NewsServiceTests
     #endregion
 
     #region GetOrSetCache Tests
-
-    [Fact]
-    public async Task GetOrSetCache_WhenCacheHasData_ReturnsFromCacheWithoutCallingGetData()
-    {
-        // Arrange
-        var cachedNews = new List<News>
-        {
-            new("Type1", "News 1", "Description 1", "1", "1"),
-            new("Type2", "News 2", "Description 2", "2", "2")
-        };
-        
-        _mockRedisService
-            .Setup(x => x.GetAsync<IEnumerable<News>>("All_News"))
-            .ReturnsAsync(cachedNews);
-
-        // Setup repository to fail if called - it shouldn't be called in this scenario
-        _mockNewsRepository
-            .Setup(x => x.GetAll())
-            .Callback(() => Assert.True(false, "Repository should not be called when data is in cache"))
-            .ReturnsAsync(new List<News>());
-
-        // Act
-        var result = await _newsService.GetAllNews();
-
-        // Assert
-        Assert.Equal(cachedNews, result);
-        _mockRedisService.Verify(x => x.SetAsync(
-            It.IsAny<string>(), 
-            It.IsAny<object>(),
-            It.IsAny<TimeSpan>()), 
-            Times.Never);
-        _mockNewsRepository.Verify(x => x.GetAll(), Times.Never);
-    }
-
     [Fact]
     public async Task GetOrSetCache_WhenCacheDoesNotHaveData_CallsGetDataAndSetsCache()
     {

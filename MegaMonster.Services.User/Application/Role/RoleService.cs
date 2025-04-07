@@ -1,8 +1,9 @@
+using FluentValidation;
 using MegaMonster.Services.User.Core.Role;
 
 namespace MegaMonster.Services.User.Application.Role;
 
-public class RoleService(IRoleRepository roleRepository, ILogger<RoleService> logger, RoleValidation validator)
+public class RoleService(IRoleRepository roleRepository, ILogger<RoleService> logger, IValidator<Core.Role.Role> validator)
 {
     public async Task<IEnumerable<Core.Role.Role>> GetAllRoles() => await roleRepository.GetAllAsync();
 

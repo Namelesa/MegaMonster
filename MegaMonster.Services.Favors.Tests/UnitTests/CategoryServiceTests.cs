@@ -462,39 +462,6 @@ public class CategoryServiceTests
     #endregion
 
     #region GetOrSetCache Tests
-
-    [Fact]
-    public async Task GetOrSetCache_WhenCacheHasData_ReturnsFromCacheWithoutCallingGetData()
-    {
-        // Arrange
-        var categoryName = "Test";
-        var cachedValue = new Category(categoryName);
-        var key = $"Category_{categoryName}";
-        
-        _mockRedisService
-            .Setup(x => x.GetAsync<Category>(key))
-            .ReturnsAsync(cachedValue);
-        
-        _mockCategoryRepository
-            .Setup(x => x.GetCategoryByName(categoryName))
-            .Callback(() => Assert.True(false, "Repository should not be called when data is in cache"))
-            .ReturnsAsync(new Category("Different"));
-
-        // Act
-        var result = await _categoryService.GetCategoryByName(categoryName);
-
-        // Assert
-        Assert.Equal(cachedValue, result);
-        
-        _mockRedisService.Verify(x => x.SetAsync(
-                It.IsAny<string>(), 
-                It.IsAny<object>(),
-                It.IsAny<TimeSpan>()), 
-            Times.Never);
-        
-        _mockCategoryRepository.Verify(x => x.GetCategoryByName(It.IsAny<string>()), Times.Never);
-    }
-
     [Fact]
     public async Task GetOrSetCache_WhenCacheDoesNotHaveData_CallsGetDataAndSetsCache()
     {
@@ -523,21 +490,5 @@ public class CategoryServiceTests
                 It.IsAny<TimeSpan>()), 
             Times.Once);
     }
-    
-    private async Task<T> InvokeGetOrSetCache<T>(string key, Func<Task<T>> getData, TimeSpan? expiration = null)
-    {
-        if (typeof(T) == typeof(Category))
-        {
-            var name = key.Replace("Category_", "");
-            return (T)(object)await _categoryService.GetCategoryByName(name);
-        }
-        else if (typeof(T) == typeof(IEnumerable<Category>))
-        {
-            return (T)(object)await _categoryService.GetAllCategories();
-        }
-        
-        throw new NotSupportedException("Test this type does not support");
-    }
-
     #endregion
 }

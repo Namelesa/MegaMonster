@@ -133,7 +133,7 @@ public class PaymentService(string publicKey, string privateKey, PaymentServiceR
     public async Task<bool> CancelPaymentAsync(Guid orderId)
     {
         var payment = await paymentServiceRepository.GetPaymentByOrderId(orderId);
-        if (payment.Data == null || payment.Data.Status != PaymentSettings.IsSuccess)
+        if (payment.Data is not { Status: PaymentSettings.IsSuccess })
         {
             Console.WriteLine("Payment not found or cannot be refunded.");
             return false;

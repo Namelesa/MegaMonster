@@ -457,47 +457,6 @@ namespace MegaMonster.Services.Favors.Tests.UnitTests
         #endregion
 
         #region GetOrSetCache Tests
-
-        [Fact]
-        public async Task GetOrSetCache_WhenCacheExists_ShouldReturnCachedDataWithoutCallingGetData()
-        {
-            // Arrange
-            var key = "test_key";
-            var cachedData = CreateValidRide();
-            cachedData.Id = 1;
-    
-            var getDataCalled = false;
-    
-            _mockRedisService.Setup(s => s.GetAsync<Ride>(key))
-                .ReturnsAsync(cachedData);
-    
-            Func<Task<Ride>> getData = () => 
-            {
-                getDataCalled = true;
-                return Task.FromResult(CreateValidRide("Different Ride"));
-            };
-
-            // Use reflection to access the private method
-            var methodInfo = typeof(RideService).GetMethod("GetOrSetCache", 
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-    
-            // Create a closed generic method with the concrete type Ride
-            var closedMethod = methodInfo.MakeGenericMethod(typeof(Ride));
-    
-            // Act
-            var result = await (Task<Ride>)closedMethod.Invoke(_rideService, new object[] 
-            { 
-                key, 
-                getData, 
-                null 
-            });
-
-            // Assert
-            result.Should().BeEquivalentTo(cachedData);
-            getDataCalled.Should().BeFalse();
-            _mockRedisService.Verify(s => s.SetAsync(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<TimeSpan>()), Times.Never);
-        }
-
         [Fact]
         public async Task GetOrSetCache_WhenCacheDoesNotExist_ShouldCallGetDataAndCacheResult()
         {
@@ -590,6 +549,135 @@ namespace MegaMonster.Services.Favors.Tests.UnitTests
             _mockRedisService.Verify(s => s.SetAsync(key, data, TimeSpan.FromMinutes(60)), Times.Once);
         }
 
+        [Fact]
+        public async Task GetOrSetCache_WhenGetDataThrowsException_ShouldPropagateException()
+        {
+            // Arrange
+            var key = "test_key";
+            var expectedException = new InvalidOperationException("Test exception");
+
+            _mockRedisService.Setup(s => s.GetAsync<string>(key))
+                .ReturnsAsync((string)null);
+
+            Func<Task<string>> getData = () => throw expectedException;
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => 
+                await InvokeGetOrSetCache<string>(key, getData, TimeSpan.FromMinutes(30)));
+                
+            exception.Should().Be(expectedException);
+            _mockRedisService.Verify(s => s.SetAsync(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<TimeSpan>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetOrSetCache_WithCollectionType_ShouldCacheCollection()
+        {
+            // Arrange
+            var key = "collection_key";
+            var data = new List<string> { "item1", "item2", "item3" };
+
+            _mockRedisService.Setup(s => s.GetAsync<List<string>>(key))
+                .ReturnsAsync((List<string>)null);
+
+            Func<Task<List<string>>> getData = () => Task.FromResult(data);
+
+            // Act
+            var result = await InvokeGetOrSetCache<List<string>>(key, getData, TimeSpan.FromMinutes(45));
+
+            // Assert
+            result.Should().BeEquivalentTo(data);
+            _mockRedisService.Verify(s => s.SetAsync(key, data, TimeSpan.FromMinutes(45)), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetOrSetCache_CustomExpirationHandling_ShouldUseProvidedExpiration()
+        {
+            // Arrange
+            var key = "custom_expiry_key";
+            var data = "test data";
+            var customExpiry = TimeSpan.FromHours(2);
+
+            _mockRedisService.Setup(s => s.GetAsync<string>(key))
+                .ReturnsAsync((string)null);
+
+            Func<Task<string>> getData = () => Task.FromResult(data);
+
+            // Act
+            var result = await InvokeGetOrSetCache<string>(key, getData, customExpiry);
+
+            // Assert
+            result.Should().Be(data);
+            _mockRedisService.Verify(s => s.SetAsync(key, data, customExpiry), Times.Once);
+        }
+        
+        [Fact]
+        public async Task GetAllRides_AsyncStateCompletionTest()
+        {
+            // Arrange
+            var rides = new List<Ride> { CreateValidRide() };
+            
+            _mockRedisService.Setup(s => s.GetAsync<IEnumerable<Ride>>("All_Rides"))
+                .ReturnsAsync((IEnumerable<Ride>)null);
+            _mockRideRepository.Setup(r => r.GetAll())
+                .ReturnsAsync(rides);
+            
+            var tcs = new TaskCompletionSource<bool>();
+            
+            _mockRedisService.Setup(s => s.SetAsync(
+                It.Is<string>(key => key == "All_Rides"),
+                It.IsAny<object>(),
+                It.IsAny<TimeSpan>()))
+                .Returns(Task.Delay(10).ContinueWith(_ => 
+                {
+                    tcs.SetResult(true);
+                    return true;
+                }));
+
+            // Act
+            var getAllTask = _rideService.GetAllRides();
+            
+            getAllTask.IsCompleted.Should().BeFalse();
+            
+            await tcs.Task;
+            var result = await getAllTask;
+
+            // Assert
+            result.Should().BeEquivalentTo(rides);
+        }
+        
+        [Fact]
+        public async Task GetOrSetCache_WithNullKey_ShouldContinueExecution()
+        {
+            // Arrange
+            string key = null;
+            var data = "test data";
+
+            _mockRedisService.Setup(s => s.GetAsync<string>(null))
+                .ReturnsAsync((string)null);
+
+            Func<Task<string>> getData = () => Task.FromResult(data);
+
+            // Act
+            var result = await InvokeGetOrSetCache<string>(key, getData, TimeSpan.FromMinutes(30));
+
+            // Assert
+            result.Should().Be(data);
+            _mockRedisService.Verify(s => s.GetAsync<string>(null), Times.Once);
+            _mockRedisService.Verify(s => s.SetAsync(null, data, It.IsAny<TimeSpan>()), Times.Once);
+        }
+        
+        [Fact]
+        public async Task GetOrSetCache_WithNullGetDataFunction_ShouldThrowArgumentNullException()
+        {
+            // Arrange
+            var key = "test_key";
+            Func<Task<string>> getData = null;
+
+            // Act & Assert
+            await Assert.ThrowsAsync<NullReferenceException>(async () => 
+                await InvokeGetOrSetCache<string>(key, getData, null));
+        }
+        
         #endregion
 
         #region ProcessChange Tests

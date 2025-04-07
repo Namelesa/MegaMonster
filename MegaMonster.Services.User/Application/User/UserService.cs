@@ -1,5 +1,5 @@
+using FluentValidation;
 using MassTransit;
-using MegaMonster.MessagingModels.User;
 using MegaMonster.MessagingModels.User.AddAdmin;
 using MegaMonster.MessagingModels.User.Edit;
 using MegaMonster.MessagingModels.User.Notification;
@@ -10,7 +10,7 @@ using MegaMonster.Services.User.Infrastructure.Redis;
 namespace MegaMonster.Services.User.Application.User;
 
 public class UserService(IUserRepository userRepository, 
-    UserValidation validation, 
+    IValidator<Users> validation, 
     IRedisService redisService,
     IPublishEndpoint publishEndpoint,
     IBannedUserRepository bannedUserRepository)
@@ -137,7 +137,7 @@ public class UserService(IUserRepository userRepository,
     private async Task<OperationResult> ValidateUser(Users user)
     {
         var validationResult = await validation.ValidateAsync(user);
-        return validationResult.Errors.Any()
+        return validationResult.Errors.Count != 0
             ? OperationResult.Fail(string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage)))
             : OperationResult.Ok();
     }

@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using FluentValidation;
 using MassTransit;
 using MegaMonster.Services.User.Application.Messaging;
 using MegaMonster.Services.User.Application.Role;
@@ -84,8 +85,8 @@ builder.Services.AddScoped<IRedisService, RedisService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<RoleService>();
 
-builder.Services.AddScoped<UserValidation>();
-builder.Services.AddScoped<RoleValidation>();
+builder.Services.AddScoped<IValidator<Users>, UserValidation>();
+builder.Services.AddScoped<IValidator<Role>, RoleValidation>();
 
 builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 
