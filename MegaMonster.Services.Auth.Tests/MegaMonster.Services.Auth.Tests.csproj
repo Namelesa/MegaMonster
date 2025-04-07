@@ -23,8 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="IntegrationTests\DataBase\" />
-      <Folder Include="IntegrationTests\MessageBroker\" />
+      <Folder Include="IntegrationTests\" />
     </ItemGroup>
 
     <ItemGroup>

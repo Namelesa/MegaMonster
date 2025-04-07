@@ -50,6 +50,7 @@ public class RideController(RideService rideService, CategoryService categorySer
         ride.CategoryId = category.Id;
         ride.ClientStatus = rideDto.Status;
         ride.Rating = rideDto.Rating;
+        ride.Image = rideDto.Image;
         var result = await rideService.AddRide(ride);
         return result.Success ? Ok("Add a new ride") : BadRequest(result.Message);
     }

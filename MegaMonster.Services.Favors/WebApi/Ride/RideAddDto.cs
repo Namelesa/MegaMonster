@@ -8,4 +8,5 @@ public class RideAddDto
     [Required] public string RideName { get; set; }
     [Required] public string Status { get; set; }
     [Required] public double Rating { get; set; }
+    [Required] public string Image { get; set; }
 }

@@ -1,4 +1,4 @@
-using MegaMonster.Services.Notification.Application.Validator;
+using FluentValidation;
 using MegaMonster.Services.Notification.Core.Interfaces;
 using MegaMonster.Services.Notification.Core.User;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +8,7 @@ namespace MegaMonster.Services.Notification.WebApi.Notification;
 
 [ApiController]
 [Route("api/notification")]
-public class NotificationController(INotification notificationService, UserValidator userValidator, BillUserValidator billUserValidator) : ControllerBase
+public class NotificationController(INotification notificationService, IValidator<UserDto> userValidator, IValidator<BillUserDto> billUserValidator) : ControllerBase
 {
     [HttpPost("confirmRegister")]
     public async Task<IActionResult> SendConfirmEmail([FromBody]UserDto userDto)

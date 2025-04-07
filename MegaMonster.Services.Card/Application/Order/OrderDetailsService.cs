@@ -1,4 +1,3 @@
-using MegaMonster.Services.Card.Core.Models;
 using MegaMonster.Services.Card.Core.OrderDetail;
 using MegaMonster.Services.Card.Infrastructure.Redis;
 

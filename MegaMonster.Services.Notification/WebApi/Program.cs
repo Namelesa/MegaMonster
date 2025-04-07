@@ -1,8 +1,10 @@
 using System.Text;
+using FluentValidation;
 using MassTransit;
 using MegaMonster.Services.Notification.Application.Messaging;
 using MegaMonster.Services.Notification.Application.Validator;
 using MegaMonster.Services.Notification.Core.Interfaces;
+using MegaMonster.Services.Notification.Core.User;
 using MegaMonster.Services.Notification.Infrastructure.MailJet;
 using MegaMonster.Services.Notification.Infrastructure.MessageBroker;
 using MegaMonster.Services.Notification.Infrastructure.Reader;
@@ -23,7 +25,8 @@ builder.Services.AddControllers();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<INotification, Notification>();
 builder.Services.AddTransient<ITemplateReader, TemplateReader>();
-builder.Services.AddScoped<UserValidator>();
+builder.Services.AddScoped<IValidator<UserDto>, UserValidator>();
+builder.Services.AddScoped<IValidator<BillUserDto>, BillUserValidator>();
 
 builder.Services.AddAuthentication(options =>
     {

@@ -12,4 +12,6 @@ public class Ride(string name) : BaseModel.BaseModel
     public string ClientStatus { get; set; }
 
     public double Rating { get; set; }
+    [Required(ErrorMessage = "Image can not be null")]
+    public string Image { get; set; }
 }
