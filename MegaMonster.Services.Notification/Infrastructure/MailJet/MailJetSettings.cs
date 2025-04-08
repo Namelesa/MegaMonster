@@ -2,6 +2,6 @@ namespace MegaMonster.Services.Notification.Infrastructure.MailJet;
 
 public class MailJetSettings
 {
-    public string? ApiKey { get; set; }
-    public string? SecretKey { get; set; }
+    public string? ApiKey { get; init; }
+    public string? SecretKey { get; init; }
 }

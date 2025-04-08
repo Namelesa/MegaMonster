@@ -5,7 +5,7 @@ using MegaMonster.Services.User.Core.Role;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace MegaMonster.Services.User.Tests.UnitTests;
+namespace MegaMonster.Services.User.Tests.UnitTests.Services;
 
 public class RoleServiceTests
 {

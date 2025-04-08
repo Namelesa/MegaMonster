@@ -6,7 +6,7 @@ using MegaMonster.Services.Notification.Infrastructure.Reader;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Moq;
 
-namespace MegaMonster.Services.Notification.Tests.UnitTests;
+namespace MegaMonster.Services.Notification.Tests.UnitTests.Notification;
 
 public class NotificationServiceTests
 {

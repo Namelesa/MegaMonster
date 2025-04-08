@@ -14,7 +14,7 @@ using MegaMonster.Services.User.Infrastructure.Redis;
 using Moq;
 using ValidationResult = FluentValidation.Results.ValidationResult;
 
-namespace MegaMonster.Services.User.Tests.UnitTests;
+namespace MegaMonster.Services.User.Tests.UnitTests.Services;
 
 public class UserServiceTests
 {

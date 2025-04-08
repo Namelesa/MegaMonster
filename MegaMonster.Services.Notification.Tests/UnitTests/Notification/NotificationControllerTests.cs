@@ -7,7 +7,7 @@ using MegaMonster.Services.Notification.WebApi.Notification;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
-namespace MegaMonster.Services.Notification.Tests.UnitTests
+namespace MegaMonster.Services.Notification.Tests.UnitTests.Notification
 {
     public class NotificationControllerTests
     {

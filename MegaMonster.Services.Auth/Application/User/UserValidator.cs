@@ -23,8 +23,7 @@ public class UserValidator : AbstractValidator<Users>
             .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]+$")
             .WithMessage("Login must contain at least one uppercase letter, one lowercase letter, and one digit.");
         RuleFor(p => p.PhoneNumber)
-            .NotEmpty()
-            .NotNull().WithMessage("Phone Number is required.")
+            .NotEmpty().NotNull().WithMessage("Phone Number is required.")
             .MinimumLength(10).WithMessage("PhoneNumber must not be less than 10 characters.")
             .MaximumLength(20).WithMessage("PhoneNumber must not exceed 20 characters.")
             .Matches(new Regex(@"^\+?\d{1,4}(\s?\(?\d{1,4}\)?[\s\-]?)?[\d\s\-]{7,15}$")).WithMessage("PhoneNumber not valid");

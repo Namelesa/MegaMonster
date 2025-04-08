@@ -13,7 +13,7 @@ using MegaMonster.Services.Auth.Infrastructure.JWT;
 using Moq;
 using ValidationResult = FluentValidation.Results.ValidationResult;
 
-namespace MegaMonster.Services.Auth.Tests.UnitTests
+namespace MegaMonster.Services.Auth.Tests.UnitTests.Service
 {
     public class AuthServiceTests
     {
